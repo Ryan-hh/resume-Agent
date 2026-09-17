@@ -1,4 +1,4 @@
-﻿import type { AIConnection } from "@/config/ai-models";
+import type { AIConnection } from "@/config/ai-models";
 
 export type AIRequestErrorCode =
   | "networkError"
@@ -19,9 +19,9 @@ export class AIRequestError extends Error {
 
 const REQUEST_TIMEOUT = 30_000;
 
-function timeoutSignal(): AbortSignal {
+function timeoutSignal(timeoutMs = REQUEST_TIMEOUT): AbortSignal {
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  setTimeout(() => controller.abort(), timeoutMs);
   return controller.signal;
 }
 
@@ -226,16 +226,41 @@ export async function fetchProviderModels(
   return list;
 }
 
+export type ChatContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: string };
+
+export type ChatMessageContent = string | ChatContentPart[];
+
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: ChatMessageContent;
 }
 
-// 通用对话补全：按协议发一次完整请求，返回模型生成的全文（供 AI 润色等场景使用）
+type NormalizedPart =
+  | { kind: "text"; text: string }
+  | { kind: "image"; dataUrl: string };
+
+function normalizeContent(content: ChatMessageContent): NormalizedPart[] {
+  if (typeof content === "string") return content ? [{ kind: "text", text: content }] : [];
+  return content.map((part) =>
+    part.type === "text"
+      ? { kind: "text", text: part.text }
+      : { kind: "image", dataUrl: part.image_url }
+  );
+}
+
+function imageMeta(dataUrl: string): { mimeType: string; data: string } {
+  const [header, data] = dataUrl.split(",");
+  return { mimeType: header.slice(5, -7), data };
+}
+
+// 通用对话补全：按协议发一次完整请求，返回模型生成的全文（供 AI 润色、简历导入等场景使用）
 export async function chatCompletion(
   connection: AIConnection,
   messages: ChatMessage[],
-  maxTokens = 4000
+  maxTokens = 4000,
+  timeoutMs = REQUEST_TIMEOUT
 ): Promise<string> {
   const { baseUrl, apiKey, model, protocol } = connection;
 
@@ -247,7 +272,11 @@ export async function chatCompletion(
       .filter((m) => m.role !== "system")
       .map((m) => ({
         role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
+        parts: normalizeContent(m.content).map((part) =>
+          part.kind === "text"
+            ? { text: part.text }
+            : { inlineData: imageMeta(part.dataUrl) }
+        ),
       }));
     let response: Response;
     try {
@@ -258,10 +287,21 @@ export async function chatCompletion(
           contents,
           generationConfig: { maxOutputTokens: maxTokens },
           ...(messages[0]?.role === "system"
-            ? { systemInstruction: { parts: [{ text: messages[0].content }] } }
+            ? {
+                systemInstruction: {
+                  parts: [
+                    {
+                      text: normalizeContent(messages[0].content)
+                        .filter((p) => p.kind === "text")
+                        .map((p) => p.text)
+                        .join("\n"),
+                    },
+                  ],
+                },
+              }
             : {}),
         }),
-        signal: timeoutSignal(),
+        signal: timeoutSignal(timeoutMs),
       });
     } catch {
       throw new AIRequestError("networkError");
@@ -286,7 +326,12 @@ export async function chatCompletion(
     const url = /\/v1$/i.test(root) ? `${root}/messages` : `${root}/v1/messages`;
     const system = messages
       .filter((m) => m.role === "system")
-      .map((m) => m.content)
+      .map((m) =>
+        normalizeContent(m.content)
+          .filter((p) => p.kind === "text")
+          .map((p) => p.text)
+          .join("\n")
+      )
       .join("\n");
     let response: Response;
     try {
@@ -305,10 +350,21 @@ export async function chatCompletion(
             .filter((m) => m.role !== "system")
             .map((m) => ({
               role: m.role === "assistant" ? "assistant" : "user",
-              content: m.content,
+              content: normalizeContent(m.content).map((part) =>
+                part.kind === "text"
+                  ? { type: "text", text: part.text }
+                  : {
+                      type: "image",
+                      source: {
+                        type: "base64",
+                        media_type: imageMeta(part.dataUrl).mimeType,
+                        data: imageMeta(part.dataUrl).data,
+                      },
+                    }
+              ),
             })),
         }),
-        signal: timeoutSignal(),
+        signal: timeoutSignal(timeoutMs),
       });
     } catch {
       throw new AIRequestError("networkError");
@@ -336,10 +392,29 @@ export async function chatCompletion(
       },
       body: JSON.stringify({
         model,
-        messages,
+        messages: messages.map((m) => {
+          const parts = normalizeContent(m.content);
+          const hasImage = parts.some((p) => p.kind === "image");
+          return {
+            role: m.role,
+            content: hasImage
+              ? [
+                  ...parts
+                    .filter((p) => p.kind === "text")
+                    .map((p) => ({ type: "text", text: p.text })),
+                  ...parts
+                    .filter((p) => p.kind === "image")
+                    .map((p) => ({
+                      type: "image_url",
+                      image_url: { url: p.dataUrl },
+                    })),
+                ]
+              : (m.content as string),
+          };
+        }),
         max_tokens: maxTokens,
       }),
-      signal: timeoutSignal(),
+      signal: timeoutSignal(timeoutMs),
     });
   } catch {
     throw new AIRequestError("networkError");

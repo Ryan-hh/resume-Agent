@@ -1,8 +1,8 @@
 import React from "react";
-import { Coffee, Heart, MessageCircle, Wallet } from "lucide-react";
+import { Coffee, Heart } from "lucide-react";
 import { Card } from "@/components/ui/primitives";
 
-// 打赏板块：静态展示项目内收款码（public/tip-wechat.svg、public/tip-alipay.svg），
+// 打赏板块：静态展示项目内收款码（public/tip-wechat.jpg、public/tip-alipay.jpg），
 // 微信 / 支付宝各一张，并排展示；替换 public 下的图片文件即更换收款码，无需上传
 export function TipJarCard() {
   return (
@@ -23,20 +23,12 @@ export function TipJarCard() {
         <div className="mx-auto grid max-w-md grid-cols-2 gap-3">
           {/* 微信收款码 */}
           <div className="group relative overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-            <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm">
-              <MessageCircle className="h-3 w-3" />
-              微信
-            </span>
-            <img src="/tip-wechat.svg" alt="微信收款码" className="block h-auto w-full" />
+            <img src="/tip-wechat.jpg" alt="微信收款码" className="block h-auto w-full" />
           </div>
 
           {/* 支付宝收款码 */}
           <div className="group relative overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-            <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-sky-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm">
-              <Wallet className="h-3 w-3" />
-              支付宝
-            </span>
-            <img src="/tip-alipay.svg" alt="支付宝收款码" className="block h-auto w-full" />
+            <img src="/tip-alipay.jpg" alt="支付宝收款码" className="block h-auto w-full" />
           </div>
         </div>
 
