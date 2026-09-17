@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { ChevronDown, X, Eye, EyeOff, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 import { Reorder, useDragControls, motion, AnimatePresence } from "framer-motion";
 import { useResumeStore } from "@/store/useResumeStore";
@@ -137,7 +137,7 @@ function InternshipItem({
             className="overflow-hidden"
           >
             <div className="flex flex-col gap-3 border-t border-border p-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
                 <Field label="公司">
                   <Input
                     value={item.company}

@@ -5,27 +5,21 @@ import DeepSeekIcon from "@lobehub/icons/es/DeepSeek/components/Color";
 import GeminiIcon from "@lobehub/icons/es/Gemini/components/Color";
 import AnthropicIcon from "@lobehub/icons/es/Claude/components/Color";
 import QwenIcon from "@lobehub/icons/es/Qwen/components/Color";
-import DoubaoIcon from "@lobehub/icons/es/Doubao/components/Color";
-import KimiIcon from "@lobehub/icons/es/Kimi/components/Color";
 import ZhipuIcon from "@lobehub/icons/es/Zhipu/components/Color";
 import MiniMaxIcon from "@lobehub/icons/es/MiniMax/components/Color";
-import GrokIcon from "@lobehub/icons/es/XAI/components/Mono";
 
 type IconComponent = ComponentType<{ size?: string | number; className?: string }>;
 
 // 各服务商官方品牌 logo（来自 @lobehub/icons，真实品牌图形）
-// OpenAI / Grok 官方无彩色版，使用官方单色标识；其余使用官方彩色版
+// OpenAI 官方无彩色版，使用官方单色标识；其余使用官方彩色版
 const OFFICIAL: Record<string, IconComponent> = {
   openai: OpenAIcon,
   deepseek: DeepSeekIcon,
   gemini: GeminiIcon,
   anthropic: AnthropicIcon,
   qwen: QwenIcon,
-  doubao: DoubaoIcon,
-  kimi: KimiIcon,
   zhipu: ZhipuIcon,
   minimax: MiniMaxIcon,
-  grok: GrokIcon,
 };
 
 // 服务商 logo：内置厂商显示官方品牌 logo，自定义显示首字母占位

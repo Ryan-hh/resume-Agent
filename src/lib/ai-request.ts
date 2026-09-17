@@ -1,4 +1,4 @@
-import type { AIConnection } from "@/config/ai-models";
+﻿import type { AIConnection } from "@/config/ai-models";
 
 export type AIRequestErrorCode =
   | "networkError"
@@ -111,7 +111,7 @@ export async function testAIConnection(connection: AIConnection): Promise<string
     return String(text).slice(0, 100);
   }
 
-  // chat-completions（OpenAI / DeepSeek / 豆包 / 通义千问 等兼容端点）
+  // chat-completions（OpenAI / DeepSeek / 通义千问 等兼容端点）
   let response: Response;
   try {
     response = await fetch(`${baseUrl}/chat/completions`, {
@@ -142,7 +142,7 @@ export async function testAIConnection(connection: AIConnection): Promise<string
 }
 
 // 拉取厂商当前可用模型列表：
-// - OpenAI 兼容端点（OpenAI/DeepSeek/豆包/通义等）→ GET {baseUrl}/models
+// - OpenAI 兼容端点（OpenAI/DeepSeek/通义等）→ GET {baseUrl}/models
 // - Gemini → GET {baseUrl}/v1beta/models
 // - Anthropic 兼容端点：官方无列表接口；但形如 xxx/anthropic 的第三方端点
 //   （如 DeepSeek https://api.deepseek.com/anthropic）可推导其 OpenAI 兼容端点拉取
@@ -325,7 +325,7 @@ export async function chatCompletion(
     return text;
   }
 
-  // chat-completions（OpenAI / DeepSeek / 豆包 / 通义千问 等兼容端点）
+  // chat-completions（OpenAI / DeepSeek / 通义千问 等兼容端点）
   let response: Response;
   try {
     response = await fetch(`${baseUrl}/chat/completions`, {

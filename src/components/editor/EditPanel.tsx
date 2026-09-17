@@ -138,10 +138,10 @@ export function EditPanel() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden border-r border-border bg-background">
       {/* 顶部：当前模块标题（非基本信息可重命名 + 恢复默认）+ 快捷添加 */}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+      <div className="flex min-w-0 items-center gap-2 border-b border-border px-4 py-2.5">
         <SectionIcon id={activeSectionId} className="h-4 w-4 shrink-0 text-muted-foreground" />
         {isBasic ? (
-          <h2 className="flex h-7 w-44 items-center truncate border-b border-border px-1 text-sm font-semibold">
+          <h2 className="flex h-7 min-w-0 max-w-44 flex-1 items-center truncate border-b border-border px-1 text-sm font-semibold">
             基本信息
           </h2>
         ) : (
@@ -153,7 +153,7 @@ export function EditPanel() {
               onBlur={handleTitleBlur}
               onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
               className={cn(
-                "h-7 w-44 rounded-none border-0 border-b bg-transparent px-1 text-sm font-semibold shadow-none transition-colors focus-visible:ring-0",
+                "h-7 min-w-0 max-w-44 flex-1 rounded-none border-0 border-b bg-transparent px-1 text-sm font-semibold shadow-none transition-colors focus-visible:ring-0",
                 titleFocused ? "border-primary" : "border-border hover:border-foreground/40"
               )}
               title="点击修改板块名称"
@@ -162,7 +162,7 @@ export function EditPanel() {
               <button
                 type="button"
                 onClick={handleResetTitle}
-                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 aria-label="恢复默认名称"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -171,7 +171,7 @@ export function EditPanel() {
           </>
         )}
         {hasAddButton && (
-          <div className="ml-auto">
+          <div className="ml-auto shrink-0">
             <Button variant="outline" size="sm" onClick={handleAddItem} className="h-7 gap-1 px-2.5 text-xs">
               <Plus className="h-3.5 w-3.5" />
               {addLabel[activeSectionId]}
@@ -180,8 +180,8 @@ export function EditPanel() {
         )}
       </div>
 
-      {/* 表单内容 */}
-      <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto p-4">
+      {/* 表单内容：@container 标记容器，面板变窄时网格自动降为单列，避免溢出 */}
+      <div className="@container scrollbar-hide min-h-0 flex-1 overflow-y-auto p-4">
         <PanelContent sectionId={activeSectionId} />
       </div>
     </div>

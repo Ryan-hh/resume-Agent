@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 export type LeftMode = "content" | "template" | "style";
 
 // 左侧操作区：由右侧 Dock 按钮切换三种面板（内容编辑 / 切换模板 / 样式）
+// 最小宽度 700px 由 WorkbenchPage 的 Panel 层保证（min-w-[700px]）
 export function LeftWorkspace({ mode }: { mode: LeftMode }) {
   return (
     <div className="relative h-full w-full overflow-hidden bg-background">
@@ -39,7 +40,7 @@ export function LeftWorkspace({ mode }: { mode: LeftMode }) {
   );
 }
 
-// 内容编辑：模块导航 + 表单
+// 内容编辑：模块导航 + 表单（导航固定宽度，表单自适应剩余空间）
 function ContentWorkspace() {
   return (
     <div className="flex h-full w-full">
@@ -163,7 +164,7 @@ function StylePanel() {
       <div className="border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">样式</h2>
       </div>
-      <div className="scrollbar-hide flex-1 overflow-y-auto p-4">
+      <div className="@container scrollbar-hide flex-1 overflow-y-auto p-4">
         <div className="flex flex-col gap-3">
           <ThemeSetting />
           <TypographySetting />

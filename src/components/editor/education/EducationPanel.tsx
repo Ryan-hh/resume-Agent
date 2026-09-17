@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { ChevronDown, X, Eye, EyeOff, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 import { Reorder, useDragControls, motion, AnimatePresence } from "framer-motion";
 import { useResumeStore } from "@/store/useResumeStore";
@@ -146,7 +146,7 @@ function EducationItem({
             className="overflow-hidden"
           >
             <div className="flex flex-col gap-3 border-t border-border p-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
                 <Field label="学校名称">
                   <Input
                     value={item.school}
@@ -162,7 +162,7 @@ function EducationItem({
                   />
                 </Field>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-3">
                 <Field label="学历">
                   <Select
                     options={DEGREE_OPTIONS}

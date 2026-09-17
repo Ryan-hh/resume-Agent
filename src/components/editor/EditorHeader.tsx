@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, ShieldAlert, Undo2, Redo2, FileText, Pencil } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
+import { useBackupStore } from "@/store/useBackupStore";
 import { useTranslations } from "@/i18n/zh";
-import { getFileHandle, verifyPermission } from "@/utils/fileSystem";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { PdfExport } from "@/components/shared/PdfExport";
@@ -20,7 +20,8 @@ export function EditorHeader() {
   const canUndo = useResumeStore((s) => s.canUndo());
   const canRedo = useResumeStore((s) => s.canRedo());
 
-  const [backupReady, setBackupReady] = React.useState<boolean | null>(null);
+  const backupReady = useBackupStore((s) => s.isConfigured);
+  const refreshBackup = useBackupStore((s) => s.refresh);
   const [titleInput, setTitleInput] = React.useState(activeResume?.title ?? "");
 
   React.useEffect(() => {
@@ -28,20 +29,8 @@ export function EditorHeader() {
   }, [activeResume?.id, activeResume?.title]);
 
   React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const handle = await getFileHandle("syncDirectory");
-        const ready = !!handle && (await verifyPermission(handle));
-        if (mounted) setBackupReady(ready);
-      } catch {
-        if (mounted) setBackupReady(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    refreshBackup();
+  }, [refreshBackup]);
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

@@ -14,7 +14,8 @@ import { DEFAULT_TEMPLATES } from "@/config/templates";
 import { initialResumeState } from "@/config/initialResumeData";
 import { STANDARD_MODULES } from "@/config/modules";
 import { generateUUID } from "@/lib/utils";
-import { getFileHandle, verifyPermission } from "@/utils/fileSystem";
+import { saveResumeJson, deleteResumeJson } from "@/utils/fileSystem";
+import { useBackupStore } from "@/store/useBackupStore";
 
 const HISTORY_LIMIT = 50;
 const HISTORY_GROUP_WINDOW_MS = 1000;
@@ -76,6 +77,7 @@ interface ResumeStore {
   activeResume: ResumeData | null;
   history: Record<string, ResumeData[]>;
   future: Record<string, ResumeData[]>;
+  firstRunCreated: boolean;
 
   createResume: (templateId?: string | null, isBlank?: boolean) => string;
   deleteResume: (resume: ResumeData) => void;
@@ -116,9 +118,10 @@ interface ResumeStore {
   setTemplate: (templateId: string) => void;
   addResume: (resume: ResumeData) => string;
   updateCertificatesContent: (content: string) => void;
+  markFirstRunCreated: () => void;
 }
 
-type PersistedResumeStore = Pick<ResumeStore, "resumes" | "activeResumeId">;
+type PersistedResumeStore = Pick<ResumeStore, "resumes" | "activeResumeId" | "firstRunCreated">;
 
 const warnedPersistFailures = new Set<string>();
 
@@ -141,30 +144,15 @@ const createSafeLocalStorage = (): StateStorage => ({
 });
 
 const syncResumeToFile = async (resumeData: ResumeData, prevResume?: ResumeData) => {
-  if (typeof window === "undefined" || typeof indexedDB === "undefined") return;
-  try {
-    const handle = await getFileHandle("syncDirectory");
-    if (!handle) return;
-    const hasPermission = await verifyPermission(handle);
-    if (!hasPermission) return;
-    const dirHandle = handle as FileSystemDirectoryHandle;
+  if (typeof window === "undefined") return;
+  if (!useBackupStore.getState().isConfigured) return;
+  await saveResumeJson(resumeData.title, resumeData, prevResume?.title);
+};
 
-    if (prevResume && prevResume.id === resumeData.id && prevResume.title !== resumeData.title) {
-      try {
-        await dirHandle.removeEntry(`${prevResume.title}.json`);
-      } catch {
-        // 旧文件不存在时忽略
-      }
-    }
-
-    const fileName = `${resumeData.title}.json`;
-    const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(JSON.stringify(resumeData, null, 2));
-    await writable.close();
-  } catch (error) {
-    console.error("同步简历到文件失败:", error);
-  }
+const deleteResumeFile = async (resumeData: ResumeData) => {
+  if (typeof window === "undefined") return;
+  if (!useBackupStore.getState().isConfigured) return;
+  await deleteResumeJson(resumeData.title);
 };
 
 const pendingSyncs = new Map<string, PendingSync>();
@@ -194,6 +182,7 @@ export const useResumeStore = create(
       activeResume: null,
       history: {},
       future: {},
+      firstRunCreated: false,
 
       createResume: (templateId = null, isBlank = false) => {
         const id = generateUUID();
@@ -297,6 +286,7 @@ export const useResumeStore = create(
           };
         });
         clearPendingSync(resume.id);
+        deleteResumeFile(resume);
       },
 
       duplicateResume: (resumeId) => {
@@ -316,6 +306,7 @@ export const useResumeStore = create(
           history: { ...state.history, [newId]: [] },
           future: { ...state.future, [newId]: [] },
         }));
+        syncResumeToFile(newResume);
         return newId;
       },
 
@@ -601,6 +592,10 @@ export const useResumeStore = create(
         syncResumeToFile(newResume);
         return id;
       },
+
+      markFirstRunCreated: () => {
+        set({ firstRunCreated: true });
+      },
     }),
     {
       name: "resume-assistant-storage",
@@ -608,6 +603,7 @@ export const useResumeStore = create(
       partialize: (state): PersistedResumeStore => ({
         resumes: state.resumes,
         activeResumeId: state.activeResumeId,
+        firstRunCreated: state.firstRunCreated,
       }),
       version: 6,
       migrate: (persistedState, version) => {

@@ -62,7 +62,12 @@ export default function TemplatesPage() {
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
       {/* 页头 */}
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="mb-8 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
             <LayoutGrid className="h-6 w-6 text-primary" />
@@ -73,10 +78,15 @@ export default function TemplatesPage() {
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
           共 {TEMPLATES.length} 款模板
         </span>
-      </div>
+      </motion.div>
 
       {/* 分类筛选 + 主题色轮播 */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.05, ease: "easeOut" }}
+        className="mb-6 flex flex-wrap items-center gap-2"
+      >
         {CATEGORIES.map((id) => {
           const active = category === id;
           return (
@@ -123,7 +133,7 @@ export default function TemplatesPage() {
             })}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 模板卡片：与「我的简历」一致的递增入场 + 信息叠在预览图上 */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

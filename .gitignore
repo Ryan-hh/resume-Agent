@@ -33,3 +33,10 @@ Thumbs.db
 .dom.html
 verify-*.png
 shot-*.png
+
+# 本地备份配置（保存用户选择的备份根路径）
+.resume-backup.json
+
+# UI 设计流程临时产物
+ui-design-runs/
+ui-review.png

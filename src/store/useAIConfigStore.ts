@@ -5,6 +5,7 @@ import {
   type AIModelProfile,
   type AISettingsData,
 } from "@/config/ai-models";
+import { saveAiConfigFile } from "@/utils/fileSystem";
 
 interface AIConfigState extends AISettingsData {
   saveModel: (profile: AIModelProfile) => void;
@@ -60,3 +61,18 @@ export const useAIConfigStore = create<AIConfigState>()(
     }
   )
 );
+
+// 自动备份：AI 配置变化时（防抖 1.2s）同步写入所选文件夹的 ai-config.json。
+// 未开启备份时 saveAiConfigFile 会直接返回 false，不产生任何副作用。
+let aiConfigSyncTimer: ReturnType<typeof setTimeout> | null = null;
+useAIConfigStore.subscribe((state) => {
+  if (aiConfigSyncTimer) clearTimeout(aiConfigSyncTimer);
+  aiConfigSyncTimer = setTimeout(() => {
+    saveAiConfigFile({
+      models: state.models,
+      textModelId: state.textModelId,
+    }).catch(() => {
+      // 写入失败静默处理（如权限被收回），不影响主流程
+    });
+  }, 1200);
+});

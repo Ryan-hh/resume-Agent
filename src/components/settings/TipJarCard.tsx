@@ -1,100 +1,49 @@
 import React from "react";
-import { toast } from "sonner";
-import { Coffee, RotateCcw, Upload } from "lucide-react";
+import { Coffee, Heart, MessageCircle, Wallet } from "lucide-react";
 import { Card } from "@/components/ui/primitives";
 
-const TIP_CODE_KEY = "resume-assistant-tip-code";
-const DEFAULT_TIP_CODE = "/tip-code-default.svg";
-
-// 打赏板块：默认展示占位收款码，hover 点击可换成自己的收款码（仅存本地浏览器）
+// 打赏板块：静态展示项目内收款码（public/tip-wechat.svg、public/tip-alipay.svg），
+// 微信 / 支付宝各一张，并排展示；替换 public 下的图片文件即更换收款码，无需上传
 export function TipJarCard() {
-  const [tipImage, setTipImage] = React.useState<string | null>(() => {
-    try {
-      return localStorage.getItem(TIP_CODE_KEY);
-    } catch {
-      return null;
-    }
-  });
-  const fileRef = React.useRef<HTMLInputElement>(null);
-
-  const handleFile = (file: File | undefined) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("请选择图片文件");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = typeof reader.result === "string" ? reader.result : null;
-      if (!dataUrl) return;
-      setTipImage(dataUrl);
-      try {
-        localStorage.setItem(TIP_CODE_KEY, dataUrl);
-      } catch {
-        // 图片过大超出 localStorage 配额时仅本次生效
-      }
-      toast.success("收款码已更新");
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const resetDefault = () => {
-    setTipImage(null);
-    try {
-      localStorage.removeItem(TIP_CODE_KEY);
-    } catch {
-      // ignore
-    }
-  };
-
   return (
-    <Card className="mx-auto w-full max-w-md p-5">
-      <div className="mb-4 flex items-baseline gap-2">
-        <Coffee className="h-4 w-4 shrink-0 translate-y-0.5 text-muted-foreground" />
-        <h3 className="text-sm font-semibold text-foreground">支持开发者</h3>
-        <span className="text-xs text-muted-foreground">如果这个工具帮到了你，欢迎打赏</span>
+    <Card className="overflow-hidden rounded-2xl">
+      {/* 头部 */}
+      <div className="flex items-center gap-3 border-b border-border/60 bg-muted/20 p-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+          <Coffee className="h-5 w-5 text-primary" />
+        </span>
+        <div>
+          <h3 className="text-[15px] font-semibold text-foreground">支持开发者</h3>
+          <p className="mt-1 text-xs text-muted-foreground">如果这个工具帮到了你，欢迎打赏一杯咖啡</p>
+        </div>
       </div>
 
-      {/* 收款码：hover 显示"更换收款码" */}
-      <div className="group relative mx-auto w-44 overflow-hidden rounded-xl border border-border bg-white">
-        <img
-          src={tipImage || DEFAULT_TIP_CODE}
-          alt="收款码"
-          className="block h-auto w-full"
-        />
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          title="更换收款码"
-          className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/0 text-white opacity-0 transition-all duration-200 group-hover:bg-black/50 group-hover:opacity-100"
-        >
-          <Upload className="h-5 w-5" />
-          <span className="text-xs font-medium">更换收款码</span>
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            handleFile(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
-      </div>
+      {/* 收款码 */}
+      <div className="p-5">
+        <div className="mx-auto grid max-w-md grid-cols-2 gap-3">
+          {/* 微信收款码 */}
+          <div className="group relative overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+            <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm">
+              <MessageCircle className="h-3 w-3" />
+              微信
+            </span>
+            <img src="/tip-wechat.svg" alt="微信收款码" className="block h-auto w-full" />
+          </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>收款码仅保存在本地浏览器</span>
-        {tipImage && (
-          <button
-            type="button"
-            onClick={resetDefault}
-            className="flex items-center gap-1 rounded px-1.5 py-1 transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <RotateCcw className="h-3 w-3" />
-            恢复默认
-          </button>
-        )}
+          {/* 支付宝收款码 */}
+          <div className="group relative overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+            <span className="absolute left-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-sky-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm">
+              <Wallet className="h-3 w-3" />
+              支付宝
+            </span>
+            <img src="/tip-alipay.svg" alt="支付宝收款码" className="block h-auto w-full" />
+          </div>
+        </div>
+
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Heart className="h-3 w-3 text-rose-400" />
+          长按识别或扫码打赏，感谢支持
+        </p>
       </div>
     </Card>
   );

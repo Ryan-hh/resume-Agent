@@ -89,8 +89,9 @@ export function PagedResume({
       >
         <ResumeTemplateComponent templateId={templateId} resume={resume} />
       </div>
-      {/* 缩放宿主：占位宽高随 scale 等比缩小，内部页面通过 transform 缩放渲染 */}
-      <div style={{ width: PREVIEW_WIDTH_PX * scale, height: hostH * scale }}>
+      {/* 缩放宿主：占位宽高随 scale 等比缩小，内部页面通过 transform 缩放渲染。
+          overflow hidden 阻止未缩放的子页布局尺寸向滚动容器传播（横向溢出/纵向空白） */}
+      <div style={{ width: PREVIEW_WIDTH_PX * scale, height: hostH * scale, overflow: "hidden" }}>
         <div
           ref={pagesRef}
           id={id}

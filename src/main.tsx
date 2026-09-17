@@ -9,25 +9,30 @@ import ResumesPage from "@/pages/ResumesPage";
 import TemplatesPage from "@/pages/TemplatesPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AISettingsPage from "@/pages/AISettingsPage";
+import EasterEggPage from "@/pages/EasterEggPage";
 import WorkbenchPage from "@/pages/WorkbenchPage";
 import "./index.css";
 
-// 首次打开时若无任何简历，自动创建一份示例简历
+// 首次打开时若无任何简历，自动创建一份示例简历；此后用户删空则保持空列表
 import { useResumeStore } from "@/store/useResumeStore";
 
 function EnsureInitialResume() {
   const resumes = useResumeStore((s) => s.resumes);
   const activeResumeId = useResumeStore((s) => s.activeResumeId);
+  const firstRunCreated = useResumeStore((s) => s.firstRunCreated);
 
   React.useEffect(() => {
     const state = useResumeStore.getState();
-    if (Object.keys(state.resumes).length === 0) {
-      state.createResume("classic", false);
-    } else if (!activeResumeId) {
+    if (!state.firstRunCreated) {
+      if (Object.keys(state.resumes).length === 0) {
+        state.createResume("classic", false);
+      }
+      state.markFirstRunCreated();
+    } else if (!activeResumeId && Object.keys(state.resumes).length > 0) {
       const firstId = Object.keys(state.resumes)[0];
       if (firstId) state.setActiveResume(firstId);
     }
-  }, [resumes, activeResumeId]);
+  }, [resumes, activeResumeId, firstRunCreated]);
 
   return null;
 }
@@ -43,6 +48,7 @@ function App() {
             <Route path="templates" element={<TemplatesPage />} />
             <Route path="ai" element={<AISettingsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="egg" element={<EasterEggPage />} />
           </Route>
           <Route path="/workbench/:id" element={<WorkbenchPage />} />
           <Route path="/home" element={<HomePage />} />

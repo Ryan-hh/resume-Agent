@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { SettingCard } from "../SettingCard";
@@ -22,7 +22,7 @@ export function HeaderAlignSetting() {
       title="顶部对齐"
       icon={<AlignLeft className="h-4 w-4 text-muted-foreground" />}
     >
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 gap-2 @[17rem]:grid-cols-3">
         {options.map((opt) => (
           <button
             key={opt.value}

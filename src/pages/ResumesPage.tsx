@@ -24,13 +24,21 @@ export default function ResumesPage() {
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
       {/* 页头 */}
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="mb-8 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">我的简历</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            <FileText className="h-6 w-6 text-primary" />
+            我的简历
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {sortedResumes.length > 0
               ? `共 ${sortedResumes.length} 份简历，点击卡片进入编辑`
-              : "导入已有简历，或新建一份开始制作"}
+              : "还没有简历"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -43,11 +51,9 @@ export default function ResumesPage() {
             新建简历
           </Button>
         </div>
-      </div>
+      </motion.div>
 
-      {sortedResumes.length === 0 ? (
-        <EmptyState onCreate={() => setCreateOpen(true)} onImport={() => setImportOpen(true)} />
-      ) : (
+      {sortedResumes.length > 0 && (
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
           <AnimatePresence>
             {sortedResumes.map((resume, index) => (
@@ -72,30 +78,6 @@ export default function ResumesPage() {
 
       <CreateResumeModal open={createOpen} onOpenChange={setCreateOpen} />
       <ImportResumeDialog open={importOpen} onOpenChange={setImportOpen} />
-    </div>
-  );
-}
-
-function EmptyState({ onCreate, onImport }: { onCreate: () => void; onImport: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-5 rounded-3xl border border-dashed border-border bg-background/60 px-6 py-24">
-      <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-        <FileText className="h-8 w-8" />
-      </span>
-      <div className="text-center">
-        <p className="text-base font-medium">还没有简历</p>
-        <p className="mt-1 text-sm text-muted-foreground">导入已有简历，或新建一份开始制作</p>
-      </div>
-      <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={onImport}>
-          <FolderOpen className="h-4 w-4" />
-          导入
-        </Button>
-        <Button onClick={onCreate}>
-          <FilePlus2 className="h-4 w-4" />
-          新建简历
-        </Button>
-      </div>
     </div>
   );
 }

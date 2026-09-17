@@ -189,7 +189,7 @@ export function RichEditor({
     }
     const profile = models.find((m) => m.id === textModelId);
     if (!profile || !profile.apiKey.trim() || !profile.model.trim()) {
-      toast.error("尚未配置润色模型，请先到 AI 配置页填写 API Key 并勾选服务商");
+      toast.error("尚未配置润色模型，请先到 AI 配置页填写 API Key 并勾选供应商");
       return;
     }
     setPolishing(true);

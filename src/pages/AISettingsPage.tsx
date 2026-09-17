@@ -27,7 +27,6 @@ import {
 } from "@/config/ai-models";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
 import { testAIConnection, AIRequestError } from "@/lib/ai-request";
-import { TipJarCard } from "@/components/settings/TipJarCard";
 import { Card } from "@/components/ui/primitives";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -93,7 +92,7 @@ function testErrorMessage(error: unknown): string {
   return message;
 }
 
-// AI 配置页：服务商为中心——填写即自动保存；测试连接仅用于验证当前配置
+// AI 配置页：供应商为中心——填写即自动保存；测试连接仅用于验证当前配置
 export default function AISettingsPage() {
   const models = useAIConfigStore((s) => s.models);
   const textModelId = useAIConfigStore((s) => s.textModelId);
@@ -131,7 +130,7 @@ export default function AISettingsPage() {
   const [testState, setTestState] = React.useState<TestState>({ status: "idle" });
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
-  // 切换服务商时同步表单
+  // 切换供应商时同步表单
   React.useEffect(() => {
     if (!selectedProfile) return;
     setNameInput(selectedProfile.name ?? "");
@@ -208,7 +207,7 @@ export default function AISettingsPage() {
     saveModel({
       id,
       provider: "custom",
-      name: `自定义服务商 ${count}`,
+      name: `自定义供应商 ${count}`,
       website: "",
       apiKey: "",
       model: "",
@@ -223,10 +222,10 @@ export default function AISettingsPage() {
     deleteModel(selectedProfile.id);
     setSelectedId("provider:deepseek");
     setDeleteOpen(false);
-    toast.success("自定义服务商已删除");
+    toast.success("自定义供应商已删除");
   };
 
-  // 左栏单选：勾选哪个服务商，润色就走哪个（仅已配置完整的可选）
+  // 左栏单选：勾选哪个供应商，润色就走哪个（仅已配置完整的可选）
   const toggleCurrent = (profile: AIModelProfile) => {
     if (textModelId === profile.id) {
       assignModel(null);
@@ -234,7 +233,7 @@ export default function AISettingsPage() {
       return;
     }
     if (!isModelConfigured(profile)) {
-      toast.error("该服务商尚未配置完整，请先填写 API Key 与模型并保存");
+      toast.error("该供应商尚未配置完整，请先填写 API Key 与模型并保存");
       return;
     }
     assignModel(profile.id);
@@ -281,9 +280,14 @@ export default function AISettingsPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-6 lg:p-8">
+    <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
       {/* 页头 */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="mb-6 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
             <Sparkles className="h-6 w-6 text-primary" />
@@ -300,21 +304,21 @@ export default function AISettingsPage() {
               configuredCount > 0 ? "bg-emerald-500" : "bg-muted-foreground/30"
             )}
           />
-          {configuredCount > 0 ? `${configuredCount} 个服务商已配置` : "尚未配置密钥"}
+          {configuredCount > 0 ? `${configuredCount} 个供应商已配置` : "尚未配置密钥"}
         </span>
-      </div>
+      </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="grid gap-5 lg:grid-cols-[250px_1fr]"
-      >
-        {/* 左栏：预设 + 自定义服务商 */}
-        <div className="space-y-4">
+      <div className="grid gap-5 lg:grid-cols-[250px_1fr]">
+        {/* 左栏：预设 + 自定义供应商 */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
+          className="space-y-4"
+        >
           <Card className="p-2">
             <p className="px-2 pb-1.5 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              预设服务商
+              预设供应商
             </p>
             <div className="flex flex-col gap-0.5">
               {AI_PROVIDERS.map((item) => {
@@ -354,7 +358,7 @@ export default function AISettingsPage() {
           <Card className="p-2">
             <div className="flex items-center justify-between px-2 pb-1.5 pt-1.5">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                自定义服务商
+                自定义供应商
               </p>
               <Button
                 type="button"
@@ -370,7 +374,7 @@ export default function AISettingsPage() {
             <div className="flex flex-col gap-0.5">
               {customProfiles.length === 0 && (
                 <p className="px-2 py-2 text-xs text-muted-foreground/70">
-                  还没有自定义服务商，点击「添加」创建一个
+                  还没有自定义供应商，点击「添加」创建一个
                 </p>
               )}
               {customProfiles.map((item) => {
@@ -398,7 +402,7 @@ export default function AISettingsPage() {
                           active ? "font-medium text-primary" : "text-foreground"
                         )}
                       >
-                        {item.name || "自定义服务商"}
+                        {item.name || "自定义供应商"}
                       </span>
                     </button>
                     <StatusDot profile={item} />
@@ -407,14 +411,19 @@ export default function AISettingsPage() {
               })}
             </div>
           </Card>
-        </div>
+        </motion.div>
 
-        {/* 右栏：服务商表单 */}
-        <div className="min-w-0 space-y-4">
+        {/* 右栏：供应商表单 */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
+          className="min-w-0 space-y-4"
+        >
           {selectedProfile && (
             <>
               <Card className="p-5">
-                {/* 服务商信息 */}
+                {/* 供应商信息 */}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/60">
@@ -428,7 +437,7 @@ export default function AISettingsPage() {
                           <input
                             value={nameInput}
                             onChange={(e) => setNameInput(e.target.value)}
-                            placeholder="服务商名称"
+                            placeholder="供应商名称"
                             className="w-44 rounded-none border-0 bg-transparent px-0 py-0 text-base font-semibold leading-6 text-foreground underline decoration-dashed decoration-border decoration-1 underline-offset-4 outline-none transition-colors placeholder:font-normal placeholder:text-muted-foreground hover:decoration-primary focus:decoration-primary"
                           />
                         )}
@@ -456,7 +465,7 @@ export default function AISettingsPage() {
                     <button
                       type="button"
                       onClick={() => setDeleteOpen(true)}
-                      title="删除该自定义服务商"
+                      title="删除该自定义供应商"
                       className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -531,7 +540,7 @@ export default function AISettingsPage() {
                         onChange={(v) => {
                           const next = v as AIProtocol;
                           setProtocolInput(next);
-                          // 预设服务商：切换协议时自动带入该协议对应的默认请求地址
+                          // 预设供应商：切换协议时自动带入该协议对应的默认请求地址
                           if (isPreset) {
                             const fallback = presetDef!.protocolBaseUrls[next];
                             if (fallback) setBaseUrlInput(fallback);
@@ -580,13 +589,13 @@ export default function AISettingsPage() {
                 </div>
               </Card>
 
-              {/* 删除自定义服务商确认 */}
+              {/* 删除自定义供应商确认 */}
               <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>删除自定义服务商？</AlertDialogTitle>
+                    <AlertDialogTitle>删除自定义供应商？</AlertDialogTitle>
                     <AlertDialogDescription>
-                      将删除「{selectedProfile.name || "该服务商"}」的完整配置（含 API Key），此操作不可恢复。
+                      将删除「{selectedProfile.name || "该供应商"}」的完整配置（含 API Key），此操作不可恢复。
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -608,12 +617,7 @@ export default function AISettingsPage() {
               </div>
             </>
           )}
-        </div>
-      </motion.div>
-
-      {/* 打赏板块：支持开发者 */}
-      <div className="mt-8 pb-2">
-        <TipJarCard />
+        </motion.div>
       </div>
     </div>
   );

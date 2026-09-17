@@ -28,17 +28,18 @@ export default function WorkbenchPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
       <EditorHeader />
       <div className="relative flex min-h-0 flex-1">
         <PanelGroup direction="horizontal" className="min-h-0 flex-1">
-          <Panel defaultSize={42} minSize={24} maxSize={60} className="min-w-0">
+          {/* 左面板最小宽度 700px：拖窄/窗口缩小时左侧编辑区不再被压缩，保证表单布局稳定 */}
+          <Panel defaultSize={42} minSize={34} maxSize={60} className="min-w-[700px]">
             <LeftWorkspace mode={mode} />
           </Panel>
           <PanelResizeHandle className="group relative flex w-px items-center justify-center bg-border outline-none">
             <div className="z-10 h-10 w-1.5 rounded-full bg-border transition-colors group-hover:bg-primary/60 group-active:bg-primary" />
           </PanelResizeHandle>
-          <Panel defaultSize={58} minSize={28} className="min-w-0">
+          <Panel defaultSize={58} minSize={28} className="min-w-[320px]">
             <PreviewPanel />
           </Panel>
         </PanelGroup>

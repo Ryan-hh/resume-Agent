@@ -144,7 +144,8 @@ a[aria-disabled="true"] {
 
 /* 预览滚动区（A4 真实尺寸 + 可滚动） */
 .preview-scroll {
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
 }
 

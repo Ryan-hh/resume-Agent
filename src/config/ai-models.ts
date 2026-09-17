@@ -2,14 +2,11 @@
 export const AI_PROVIDERS = [
   "openai",
   "deepseek",
-  "doubao",
   "qwen",
   "gemini",
   "anthropic",
-  "kimi",
   "zhipu",
   "minimax",
-  "grok",
 ] as const;
 export type AIProvider = (typeof AI_PROVIDERS)[number];
 export type AIProtocol = "chat-completions" | "gemini" | "anthropic";
@@ -80,19 +77,7 @@ export const AI_PROVIDER_DEFINITIONS: Record<AIProvider, ProviderDefinition> = {
     keyUrl: "https://platform.deepseek.com",
     website: "https://platform.deepseek.com",
   },
-  doubao: {
-    name: "豆包",
-    baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
-    protocol: "chat-completions",
-    protocols: ["chat-completions"],
-    protocolBaseUrls: {
-      "chat-completions": "https://ark.cn-beijing.volces.com/api/v3",
-    },
-    keyUrl: "https://console.volcengine.com/ark",
-    website: "https://console.volcengine.com/ark",
-  },
-  qwen: {
-    name: "通义千问",
+  qwen: {    name: "通义千问",
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     protocol: "chat-completions",
     protocols: ["chat-completions"],
@@ -123,15 +108,6 @@ export const AI_PROVIDER_DEFINITIONS: Record<AIProvider, ProviderDefinition> = {
     keyUrl: "https://console.anthropic.com/settings/keys",
     website: "https://platform.claude.com",
   },
-  kimi: {
-    name: "Kimi",
-    baseUrl: "https://api.moonshot.cn/v1",
-    protocol: "chat-completions",
-    protocols: ["chat-completions"],
-    protocolBaseUrls: { "chat-completions": "https://api.moonshot.cn/v1" },
-    keyUrl: "https://platform.moonshot.cn",
-    website: "https://platform.moonshot.cn",
-  },
   zhipu: {
     name: "智谱 GLM",
     baseUrl: "https://open.bigmodel.cn/api/paas/v4",
@@ -149,15 +125,6 @@ export const AI_PROVIDER_DEFINITIONS: Record<AIProvider, ProviderDefinition> = {
     protocolBaseUrls: { "chat-completions": "https://api.minimax.chat/v1" },
     keyUrl: "https://platform.minimaxi.com",
     website: "https://platform.minimaxi.com",
-  },
-  grok: {
-    name: "Grok",
-    baseUrl: "https://api.x.ai/v1",
-    protocol: "chat-completions",
-    protocols: ["chat-completions"],
-    protocolBaseUrls: { "chat-completions": "https://api.x.ai/v1" },
-    keyUrl: "https://console.x.ai",
-    website: "https://docs.x.ai",
   },
 };
 
@@ -180,11 +147,6 @@ export const BUILTIN_AI_MODELS: Record<AIProvider, readonly BuiltinAIModel[]> = 
       description: "快速、低成本的通用对话与润色",
     },
   ],
-  doubao: [
-    { id: "doubao-seed-2-1-pro-260628", name: "豆包 Seed 2.1 Pro", description: "旗舰级文本生成与推理", recommended: true },
-    { id: "doubao-seed-1-8-251228", name: "豆包大模型 1.8", description: "最新稳定版，均衡可靠" },
-    { id: "doubao-seed-1-6-vision-250815", name: "豆包 Seed 1.6 Vision", description: "多模态视觉理解" },
-  ],
   qwen: [
     { id: "qwen3.8-max", name: "Qwen 3.8 Max", description: "旗舰级文本生成与推理", recommended: true },
     { id: "qwen3.7-plus", name: "Qwen 3.7 Plus", description: "效果与成本均衡" },
@@ -200,11 +162,6 @@ export const BUILTIN_AI_MODELS: Record<AIProvider, readonly BuiltinAIModel[]> = 
     { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", description: "质量与速度均衡" },
     { id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", description: "快速、低成本的日常处理" },
   ],
-  kimi: [
-    { id: "kimi-k2", name: "Kimi K2", description: "旗舰级推理与高质量写作", recommended: true },
-    { id: "moonshot-v1-128k", name: "Moonshot V1 128K", description: "超长上下文稳定模型" },
-    { id: "moonshot-v1-32k", name: "Moonshot V1 32K", description: "均衡通用模型" },
-  ],
   zhipu: [
     { id: "glm-4-plus", name: "GLM-4 Plus", description: "旗舰级推理与生成", recommended: true },
     { id: "glm-4-flash", name: "GLM-4 Flash", description: "快速、低成本的通用处理" },
@@ -213,11 +170,6 @@ export const BUILTIN_AI_MODELS: Record<AIProvider, readonly BuiltinAIModel[]> = 
   minimax: [
     { id: "minimax-text-01", name: "MiniMax Text-01", description: "旗舰级长文本生成", recommended: true },
     { id: "abab6.5s-chat", name: "ABAB 6.5s", description: "通用对话模型" },
-  ],
-  grok: [
-    { id: "grok-4", name: "Grok 4", description: "旗舰级推理模型", recommended: true },
-    { id: "grok-4-fast", name: "Grok 4 Fast", description: "快速响应模型" },
-    { id: "grok-3-mini", name: "Grok 3 Mini", description: "轻量、低成本处理" },
   ],
 };
 

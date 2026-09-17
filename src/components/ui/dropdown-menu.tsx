@@ -7,7 +7,7 @@ const DropdownContext = React.createContext<{
   setOpen: (v: boolean) => void;
 }>({ open: false, setOpen: () => {} });
 
-export function DropdownMenu({ children }: { children: React.ReactNode }) {
+export function DropdownMenu({ children, className }: { children: React.ReactNode; className?: string }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -21,7 +21,7 @@ export function DropdownMenu({ children }: { children: React.ReactNode }) {
 
   return (
     <DropdownContext.Provider value={{ open, setOpen }}>
-      <div ref={ref} className="relative inline-block">
+      <div ref={ref} className={cn("relative inline-block", className)}>
         {children}
       </div>
     </DropdownContext.Provider>

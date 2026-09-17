@@ -165,7 +165,7 @@ export function BasicPanel() {
       {/* 个人信息（字段顺序固定） */}
       <section className="rounded-xl border border-border p-4">
         <h3 className="mb-3 text-sm font-semibold">个人信息</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
           <Field label={<FieldLabel icon={User} text="姓名" />}>
             <Input
               value={basic.name}
@@ -288,7 +288,7 @@ function CustomFields({
                   onChange(fields.map((f) => (f.id === field.id ? { ...f, icon } : f)))
                 }
               />
-              <div className="grid min-w-0 flex-1 grid-cols-[1fr_1.2fr] gap-2">
+              <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 @[17rem]:grid-cols-[1fr_1.2fr]">
                 <Input
                   value={field.label}
                   onChange={(e) =>

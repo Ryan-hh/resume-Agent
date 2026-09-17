@@ -1,18 +1,28 @@
 import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { FileText, LayoutTemplate, Settings, Sparkles, ChevronLeft } from "lucide-react";
+import { FileText, LayoutTemplate, Settings, Sparkles, ChevronLeft, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useBackupStore } from "@/store/useBackupStore";
+import { BackupSidebarItem } from "@/components/dashboard/BackupSidebarItem";
+import { BackupBanner } from "@/components/dashboard/BackupBanner";
 
 // 仪表盘布局：左侧可折叠导航 + 内容区
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState(false);
+  const refreshBackup = useBackupStore((s) => s.refresh);
+
+  // 启动时检测备份目录状态（侧边栏入口 / 引导横幅 / 设置页共用）
+  React.useEffect(() => {
+    refreshBackup();
+  }, [refreshBackup]);
 
   const navItems = [
     { to: "/", icon: FileText, label: "我的简历", end: true },
     { to: "/templates", icon: LayoutTemplate, label: "模板库" },
     { to: "/ai", icon: Sparkles, label: "AI 配置" },
     { to: "/settings", icon: Settings, label: "设置" },
+    { to: "/egg", icon: Gift, label: "彩蛋" },
   ];
 
   return (
@@ -81,20 +91,26 @@ export default function DashboardLayout() {
           ))}
         </nav>
 
-        {/* 收起 */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className={cn(
-            "flex shrink-0 items-center gap-2 border-t border-border/80 py-3 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-            collapsed ? "justify-center px-0" : "px-6 justify-start"
-          )}
-        >
-          <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
-          {!collapsed && "收起"}
-        </button>
+        {/* 底部：自动备份 + 收起 */}
+        <div className="flex shrink-0 flex-col border-t border-border/80">
+          <div className="px-2 py-1.5">
+            <BackupSidebarItem collapsed={collapsed} />
+          </div>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              "flex items-center gap-2 py-3 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              collapsed ? "justify-center px-0" : "px-6 justify-start"
+            )}
+          >
+            <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
+            {!collapsed && "收起"}
+          </button>
+        </div>
       </aside>
 
       <main className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
+        <BackupBanner />
         <Outlet />
       </main>
     </div>
