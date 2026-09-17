@@ -1,0 +1,35 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+dist-ssr/
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript 构建缓存
+*.tsbuildinfo
+
+# 环境变量（如需示例请保留 .env.example）
+.env
+.env.*
+!.env.example
+
+# 编辑器与系统
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# 本地调试残留
+.chrome-*/
+.dom.html
+verify-*.png
+shot-*.png

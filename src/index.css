@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: hsl(240 0% 100%);
+  --color-foreground: hsl(240 10% 3.9%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(240 10% 3.9%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(240 10% 3.9%);
+  --color-primary: hsl(240 5.9% 10%);
+  --color-primary-foreground: hsl(0 0% 98%);
+  --color-secondary: hsl(240 4.8% 95.9%);
+  --color-secondary-foreground: hsl(240 5.9% 10%);
+  --color-muted: hsl(240 4.8% 95.9%);
+  --color-muted-foreground: hsl(240 3.8% 46.1%);
+  --color-accent: hsl(240 4.8% 95.9%);
+  --color-accent-foreground: hsl(240 5.9% 10%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(0 0% 98%);
+  --color-border: hsl(240 5.9% 90%);
+  --color-input: hsl(240 5.9% 90%);
+  --color-ring: hsl(240 5.9% 10%);
+  --radius-lg: 0.5rem;
+  --radius-md: 0.375rem;
+  --radius-sm: 0.25rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+}
+
+.dark {
+  --color-background: hsl(240 10% 3.9%);
+  --color-foreground: hsl(0 0% 98%);
+  --color-card: hsl(240 10% 5.9%);
+  --color-card-foreground: hsl(0 0% 98%);
+  --color-popover: hsl(240 10% 5.9%);
+  --color-popover-foreground: hsl(0 0% 98%);
+  --color-primary: hsl(0 0% 98%);
+  --color-primary-foreground: hsl(240 5.9% 10%);
+  --color-secondary: hsl(240 3.7% 15.9%);
+  --color-secondary-foreground: hsl(0 0% 98%);
+  --color-muted: hsl(240 3.7% 15.9%);
+  --color-muted-foreground: hsl(240 5% 64.9%);
+  --color-accent: hsl(240 3.7% 15.9%);
+  --color-accent-foreground: hsl(0 0% 98%);
+  --color-destructive: hsl(0 62.8% 30.6%);
+  --color-destructive-foreground: hsl(0 0% 98%);
+  --color-border: hsl(240 3.7% 15.9%);
+  --color-input: hsl(240 3.7% 15.9%);
+  --color-ring: hsl(240 4.9% 83.9%);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 鼠标样式：可点击元素显示手型（Tailwind v4 preflight 默认不再给按钮 pointer） */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="menuitem"],
+[role="menuitemradio"],
+[role="menuitemcheckbox"],
+[role="option"],
+[role="tab"],
+[role="switch"],
+[role="checkbox"],
+[role="radio"],
+[role="slider"],
+[role="link"],
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="range"]:not(:disabled),
+summary,
+label,
+a[href] {
+  cursor: pointer;
+}
+
+/* 禁用态统一为不可用光标 */
+button:disabled,
+[role="button"][aria-disabled="true"],
+select:disabled,
+input:disabled,
+textarea:disabled,
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.workbench-body-lock {
+  overflow: hidden;
+}
+
+/* 隐藏滚动条但保持可滚动 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 全局统一滚动条：细圆角风格（覆盖默认矩形滚动条） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 0.2) transparent;
+}
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(0 0 0 / 0.18);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(0 0 0 / 0.32);
+}
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.22);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(255 255 255 / 0.38);
+}
+
+/* 预览滚动区（A4 真实尺寸 + 可滚动） */
+.preview-scroll {
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+/* A4 纸张 */
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  background: white;
+}
+
+/* 首页动画 */
+@keyframes blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+.animate-blob {
+  animation: blob 7s infinite ease-in-out;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* 简历富文本内容样式（作用于模板内渲染的 .skill-content 等） */
+.resume-rich {
+  line-height: inherit;
+  /* 保留连续空格（含 Tab），输入的空格在简历上原样显示 */
+  white-space: pre-wrap;
+}
+.resume-rich ul,
+.resume-rich ol {
+  padding: 0;
+  margin: 0;
+}
+.resume-rich ul {
+  list-style: none;
+}
+.resume-rich ul li {
+  position: relative;
+  padding-left: 1.1em;
+  margin-bottom: 0.3em;
+}
+.resume-rich ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0.1em;
+  color: currentColor;
+}
+.resume-rich ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.resume-rich ol li {
+  margin-bottom: 0.3em;
+}
+
+/* 富文本编辑器（TipTap）内容区 */
+.rich-editor .tiptap {
+  min-height: 96px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: inherit;
+  outline: none;
+  /* 输入的空格原样保留显示 */
+  white-space: pre-wrap;
+}
+.rich-editor .tiptap p {
+  margin: 0 0 6px;
+}
+.rich-editor .tiptap p:last-child {
+  margin-bottom: 0;
+}
+.rich-editor .tiptap ul,
+.rich-editor .tiptap ol {
+  padding-left: 1.4em;
+  margin: 4px 0;
+}
+.rich-editor .tiptap ul {
+  list-style: disc;
+}
+.rich-editor .tiptap ol {
+  list-style: decimal;
+}
+.rich-editor .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+}
+
+/* （已取消：模板 section 悬停高亮与点击跳转编辑，改为纯展示） */

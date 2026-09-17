@@ -1,0 +1,177 @@
+import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check } from "lucide-react";
+import { useResumeStore } from "@/store/useResumeStore";
+import { TEMPLATES } from "@/config/templates";
+import { initialResumeState } from "@/config/initialResumeData";
+import { ResumeData } from "@/types/resume";
+import { SidePanel } from "./SidePanel";
+import { EditPanel } from "./EditPanel";
+import { ThemeSetting } from "./theme/ThemeSetting";
+import { TypographySetting } from "./typography/TypographySetting";
+import { SpacingSetting } from "./spacing/SpacingSetting";
+import { ModeSetting } from "./mode/ModeSetting";
+import { HeaderAlignSetting } from "./layout/HeaderAlignSetting";
+import { TemplateThumbnail } from "@/components/preview/TemplateThumbnail";
+import { cn } from "@/lib/utils";
+
+export type LeftMode = "content" | "template" | "style";
+
+// 左侧操作区：由右侧 Dock 按钮切换三种面板（内容编辑 / 切换模板 / 样式）
+export function LeftWorkspace({ mode }: { mode: LeftMode }) {
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-background">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0, x: -14 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 14 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="h-full w-full"
+        >
+          {mode === "content" && <ContentWorkspace />}
+          {mode === "template" && <TemplatePanel />}
+          {mode === "style" && <StylePanel />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// 内容编辑：模块导航 + 表单
+function ContentWorkspace() {
+  return (
+    <div className="flex h-full w-full">
+      <div className="w-56 shrink-0 overflow-hidden">
+        <SidePanel />
+      </div>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <EditPanel />
+      </div>
+    </div>
+  );
+}
+
+const sampleResume: ResumeData = {
+  ...(initialResumeState as unknown as ResumeData),
+  id: "sample",
+  createdAt: "",
+  updatedAt: "",
+  templateId: "classic",
+};
+
+// 切换模板：一排 3 个，卡片简洁精致——hover 高亮、选中淡蒙版 + 弹性对勾（从上一选中位置的方向滑入）
+function TemplatePanel() {
+  const activeResume = useResumeStore((s) => s.activeResume);
+  const setTemplate = useResumeStore((s) => s.setTemplate);
+  const currentTemplateId = activeResume?.templateId || "classic";
+
+  const COLS = 3;
+  const [dir, setDir] = React.useState({ x: 0, y: 0 });
+
+  // 点击时同步计算移动方向（左→右 / 右→左 / 上→下 / 下→上 / 斜向），确保动画方向与本次移动一致
+  const handleSelect = (templateId: string) => {
+    if (templateId === currentTemplateId) return;
+    const prevIdx = TEMPLATES.findIndex((t) => t.id === currentTemplateId);
+    const curIdx = TEMPLATES.findIndex((t) => t.id === templateId);
+    if (prevIdx >= 0 && curIdx >= 0) {
+      setDir({
+        x: (curIdx % COLS) - (prevIdx % COLS),
+        y: Math.floor(curIdx / COLS) - Math.floor(prevIdx / COLS),
+      });
+    }
+    setTemplate(templateId);
+  };
+
+  return (
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <div className="scrollbar-hide flex-1 overflow-y-auto p-4">
+        <div className="grid grid-cols-3 gap-3">
+          {TEMPLATES.map((template, i) => {
+            const isCurrent = template.id === currentTemplateId;
+            return (
+              <motion.button
+                key={template.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.25, ease: "easeOut" }}
+                onClick={() => handleSelect(template.id)}
+                className={cn(
+                  "group relative flex flex-col overflow-hidden rounded-xl border bg-card text-left transition-all duration-200",
+                  isCurrent
+                    ? "border-primary ring-1 ring-primary/30"
+                    : "border-border hover:border-primary/40 hover:shadow-md"
+                )}
+              >
+                {/* 缩略图区域 */}
+                <div className="relative w-full overflow-hidden bg-white">
+                  <TemplateThumbnail
+                    templateId={template.id}
+                    sampleResume={{ ...sampleResume, templateId: template.id }}
+                  />
+                  {/* 选中态：淡蒙版 + 居中对勾（从方向侧滑入） */}
+                  <AnimatePresence>
+                    {isCurrent && (
+                      <motion.div
+                        key="check"
+                        initial={{ opacity: 0, x: -dir.x * 90, y: -dir.y * 90 }}
+                        animate={{ opacity: 1, x: 0, y: 0 }}
+                        exit={{ opacity: 0, x: dir.x * -30, y: dir.y * -30 }}
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        className="absolute inset-0 flex items-center justify-center bg-primary/10"
+                      >
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md">
+                          <Check className="h-5 w-5" strokeWidth={3} />
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {/* 名称行 */}
+                <div
+                  className={cn(
+                    "flex w-full items-center justify-between gap-1 px-2.5 py-2",
+                    isCurrent && "bg-primary/5"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "truncate text-xs font-medium",
+                      isCurrent ? "text-primary" : "text-foreground"
+                    )}
+                  >
+                    {template.name}
+                  </span>
+                  {isCurrent && (
+                    <span className="shrink-0 text-[10px] font-medium text-primary">使用中</span>
+                  )}
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 样式：主题 / 字体 / 间距 / 模式
+function StylePanel() {
+  return (
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="text-sm font-semibold">样式</h2>
+      </div>
+      <div className="scrollbar-hide flex-1 overflow-y-auto p-4">
+        <div className="flex flex-col gap-3">
+          <ThemeSetting />
+          <TypographySetting />
+          <SpacingSetting />
+          <ModeSetting />
+          <HeaderAlignSetting />
+        </div>
+      </div>
+    </div>
+  );
+}
