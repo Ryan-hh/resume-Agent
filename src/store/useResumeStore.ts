@@ -204,7 +204,6 @@ export const useResumeStore = create(
             ...newResume.basic,
             name: "",
             title: "",
-            employementStatus: "",
             email: "",
             phone: "",
             location: "",

@@ -232,9 +232,31 @@ export type ChatContentPart =
 
 export type ChatMessageContent = string | ChatContentPart[];
 
+export interface ToolCall {
+  id: string;
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
 export interface ChatMessage {
-  role: "system" | "user" | "assistant";
+  role: "system" | "user" | "assistant" | "tool";
   content: ChatMessageContent;
+  // assistant 消息携带本轮要执行的工具调用（OpenAI 协议续轮必需）
+  toolCalls?: ToolCall[];
+  // tool 消息：回填对应调用
+  toolCallId?: string;
+  toolName?: string;
+}
+
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface ToolResponse {
+  content: string;
+  toolCalls: ToolCall[];
 }
 
 type NormalizedPart =
@@ -429,4 +451,322 @@ export async function chatCompletion(
   const text = data?.choices?.[0]?.message?.content ?? "";
   if (!text) throw new AIRequestError("upstreamError", "模型未返回内容");
   return text;
+}
+
+// ============ 工具调用（function calling） ============
+
+function safeParseJson(raw: unknown): Record<string, unknown> {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) return raw as Record<string, unknown>;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    } catch {
+      // fallthrough
+    }
+  }
+  return {};
+}
+
+function normalizeTextContent(content: ChatMessageContent): string {
+  if (typeof content === "string") return content;
+  return content
+    .filter((p) => p.type === "text")
+    .map((p) => p.text)
+    .join("\n");
+}
+
+// 带工具调用的对话补全：支持 OpenAI 兼容 / Gemini / Anthropic 三种协议。
+// 调用方用统一的 ChatMessage 描述轮次，此处按协议翻译请求与响应。
+export async function chatCompletionWithTools(
+  connection: AIConnection,
+  messages: ChatMessage[],
+  tools: ToolDefinition[],
+  maxTokens = 4096,
+  timeoutMs = REQUEST_TIMEOUT
+): Promise<ToolResponse> {
+  const { baseUrl, apiKey, model, protocol } = connection;
+
+  if (protocol === "gemini") {
+    const url = `${baseUrl}/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const contents = messages
+      .filter((m) => m.role !== "system")
+      .map((m) => {
+        if (m.role === "assistant" && m.toolCalls?.length) {
+          return {
+            role: "model",
+            parts: [
+              ...normalizeContent(m.content)
+                .filter((p): p is { kind: "text"; text: string } => p.kind === "text" && !!p.text)
+                .map((p) => ({ text: p.text })),
+              ...m.toolCalls.map((call) => ({
+                functionCall: { name: call.name, args: call.arguments },
+              })),
+            ],
+          };
+        }
+        if (m.role === "tool") {
+          return {
+            role: "user",
+            parts: [
+              {
+                functionResponse: {
+                  name: m.toolName ?? "unknown",
+                  response: { result: normalizeTextContent(m.content) },
+                },
+              },
+            ],
+          };
+        }
+        return {
+          role: m.role === "assistant" ? "model" : "user",
+          parts: normalizeContent(m.content).map((part) =>
+            part.kind === "text"
+              ? { text: part.text }
+              : { inlineData: imageMeta(part.dataUrl) }
+          ),
+        };
+      });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          tools:
+            tools.length > 0
+              ? [
+                  {
+                    functionDeclarations: tools.map((t) => ({
+                      name: t.name,
+                      description: t.description,
+                      parameters: t.parameters,
+                    })),
+                  },
+                ]
+              : undefined,
+          generationConfig: { maxOutputTokens: maxTokens },
+          ...(messages[0]?.role === "system"
+            ? {
+                systemInstruction: {
+                  parts: [
+                    {
+                      text: normalizeContent(messages[0].content)
+                        .filter((p) => p.kind === "text")
+                        .map((p) => p.text)
+                        .join("\n"),
+                    },
+                  ],
+                },
+              }
+            : {}),
+        }),
+        signal: timeoutSignal(timeoutMs),
+      });
+    } catch {
+      throw new AIRequestError("networkError");
+    }
+    if (!response.ok) {
+      throw new AIRequestError(mapStatus(response.status), await parseErrorBody(response));
+    }
+    const data = await response.json().catch(() => null);
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts
+      .filter((p: { text?: string }) => p.text)
+      .map((p: { text?: string }) => p.text ?? "")
+      .join("");
+    const toolCalls: ToolCall[] = parts
+      .filter((p: { functionCall?: unknown }) => p.functionCall)
+      .map((p: { functionCall?: { name?: string; args?: unknown } }, i: number) => ({
+        id: `fc-${i}`,
+        name: p.functionCall?.name ?? "",
+        arguments: safeParseJson(p.functionCall?.args),
+      }))
+      .filter((c: ToolCall) => c.name);
+    return { content: text, toolCalls };
+  }
+
+  if (protocol === "anthropic") {
+    const root = baseUrl.trim().replace(/\/+$/, "");
+    const url = /\/v1$/i.test(root) ? `${root}/messages` : `${root}/v1/messages`;
+    const system = messages
+      .filter((m) => m.role === "system")
+      .map((m) => normalizeTextContent(m.content))
+      .join("\n");
+    const bodyMessages = messages.filter((m) => m.role !== "system").map((m) => {
+      if (m.role === "assistant" && m.toolCalls?.length) {
+        return {
+          role: "assistant",
+          content: [
+            ...(normalizeTextContent(m.content)
+              ? [{ type: "text" as const, text: normalizeTextContent(m.content) }]
+              : []),
+            ...m.toolCalls.map((call) => ({
+              type: "tool_use" as const,
+              id: call.id,
+              name: call.name,
+              input: call.arguments,
+            })),
+          ],
+        };
+      }
+      if (m.role === "tool") {
+        return {
+          role: "user",
+          content: [
+            {
+              type: "tool_result" as const,
+              tool_use_id: m.toolCallId ?? "",
+              content: normalizeTextContent(m.content),
+            },
+          ],
+        };
+      }
+      return {
+        role: m.role,
+        content: normalizeContent(m.content).map((part) =>
+          part.kind === "text"
+            ? { type: "text", text: part.text }
+            : {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: imageMeta(part.dataUrl).mimeType,
+                  data: imageMeta(part.dataUrl).data,
+                },
+              }
+        ),
+      };
+    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: maxTokens,
+          ...(system ? { system } : {}),
+          messages: bodyMessages,
+          ...(tools.length > 0
+            ? {
+                tools: tools.map((t) => ({
+                  name: t.name,
+                  description: t.description,
+                  input_schema: t.parameters,
+                })),
+              }
+            : {}),
+        }),
+        signal: timeoutSignal(timeoutMs),
+      });
+    } catch {
+      throw new AIRequestError("networkError");
+    }
+    if (!response.ok) {
+      throw new AIRequestError(mapStatus(response.status), await parseErrorBody(response));
+    }
+    const data = await response.json().catch(() => null);
+    const blocks = Array.isArray(data?.content) ? data.content : [];
+    const text = blocks
+      .filter((b: { type?: string; text?: string }) => b.type === "text" && b.text)
+      .map((b: { text?: string }) => b.text ?? "")
+      .join("");
+    const toolCalls: ToolCall[] = blocks
+      .filter((b: { type?: string }) => b.type === "tool_use")
+      .map((b: { id?: string; name?: string; input?: unknown }) => ({
+        id: b.id ?? "",
+        name: b.name ?? "",
+        arguments: safeParseJson(b.input),
+      }))
+      .filter((c: ToolCall) => c.name);
+    return { content: text, toolCalls };
+  }
+
+  // chat-completions（OpenAI / DeepSeek / 通义千问 等兼容端点）
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: messages.map((m) => {
+          if (m.role === "assistant" && m.toolCalls?.length) {
+            return {
+              role: "assistant",
+              content: normalizeTextContent(m.content) || null,
+              tool_calls: m.toolCalls.map((call) => ({
+                id: call.id,
+                type: "function",
+                function: {
+                  name: call.name,
+                  arguments: JSON.stringify(call.arguments),
+                },
+              })),
+            };
+          }
+          if (m.role === "tool") {
+            return {
+              role: "tool",
+              tool_call_id: m.toolCallId ?? "",
+              content: normalizeTextContent(m.content),
+            };
+          }
+          const parts = normalizeContent(m.content);
+          const hasImage = parts.some((p) => p.kind === "image");
+          return {
+            role: m.role,
+            content: hasImage
+              ? [
+                  ...parts
+                    .filter((p) => p.kind === "text")
+                    .map((p) => ({ type: "text", text: p.text })),
+                  ...parts
+                    .filter((p) => p.kind === "image")
+                    .map((p) => ({ type: "image_url", image_url: { url: p.dataUrl } })),
+                ]
+              : (m.content as string),
+          };
+        }),
+        ...(tools.length > 0
+          ? {
+              tools: tools.map((t) => ({
+                type: "function",
+                function: { name: t.name, description: t.description, parameters: t.parameters },
+              })),
+              tool_choice: "auto",
+            }
+          : {}),
+        max_tokens: maxTokens,
+      }),
+      signal: timeoutSignal(timeoutMs),
+    });
+  } catch {
+    throw new AIRequestError("networkError");
+  }
+  if (!response.ok) {
+    throw new AIRequestError(mapStatus(response.status), await parseErrorBody(response));
+  }
+  const data = await response.json().catch(() => null);
+  const message = data?.choices?.[0]?.message;
+  const text = message?.content ?? "";
+  const toolCalls: ToolCall[] = Array.isArray(message?.tool_calls)
+    ? message.tool_calls
+        .filter((tc: { type?: string; function?: { name?: string } }) => tc.function?.name)
+        .map((tc: { id?: string; function?: { name?: string; arguments?: string } }) => ({
+          id: tc.id ?? "",
+          name: tc.function?.name ?? "",
+          arguments: safeParseJson(tc.function?.arguments),
+        }))
+    : [];
+  return { content: text, toolCalls };
 }

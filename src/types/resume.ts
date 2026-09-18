@@ -94,18 +94,13 @@ export interface BasicInfo {
   phone: string;
   location: string;
   icons: Record<string, string>;
-  employementStatus: string;
   photo: string;
   photoConfig: PhotoConfig;
   fieldOrder?: BasicFieldType[];
   customFields: CustomFieldType[];
-  githubKey: string;
-  githubUseName: string;
-  githubContributionsVisible: boolean;
   layout?: "left" | "center" | "right";
   // 个人信息扩展字段（固定顺序展示）
   gender?: string; // 性别：男 / 女
-  workYears?: string; // 工作年限：应届生 / 1年以内 / 1-3年 / 3-5年 / 5-10年 / 10年以上
   jobIntention?: string; // 求职意向（目标岗位）
   politicalStatus?: string; // 政治面貌
   showAge?: boolean; // 出生日期旁：勾选后简历上在年月日基础上
@@ -118,7 +113,6 @@ export interface Education {
   degree: string;
   startDate: string;
   endDate: string;
-  gpa?: string;
   description?: string;
   visible?: boolean;
 }

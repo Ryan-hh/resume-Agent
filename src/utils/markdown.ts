@@ -35,7 +35,6 @@ export const generateResumeMarkdown = (
   lines.push("");
 
   if (basic.title) lines.push(`**${basic.title}**  `);
-  if (basic.employementStatus) lines.push(`${labels.employementStatus || "状态"}：${basic.employementStatus}  `);
   if (basic.email) lines.push(`${labels.email || "邮箱"}：${basic.email}  `);
   if (basic.phone) lines.push(`${labels.phone || "电话"}：${basic.phone}  `);
   if (basic.location) lines.push(`${labels.location || "所在地"}：${basic.location}  `);
@@ -49,7 +48,7 @@ export const generateResumeMarkdown = (
       lines.push(`### ${e.school || ""}${e.major ? ` · ${e.major}` : ""}`);
       const range = [e.startDate, e.endDate].filter(Boolean).join(" - ");
       if (range) lines.push(`${range}`);
-      if (e.degree) lines.push(`${e.degree}${e.gpa ? ` · GPA ${e.gpa}` : ""}`);
+      if (e.degree) lines.push(`${e.degree}`);
       if (e.description) {
         lines.push("");
         lines.push(htmlToText(e.description));

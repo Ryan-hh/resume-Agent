@@ -456,7 +456,6 @@ export function EducationSection({
                 {[item.startDate, item.endDate].filter(Boolean).join(" - ")}
               </span>
             </div>
-            {item.gpa && <div style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280" }}>GPA: {item.gpa}</div>}
             {item.description && (
               <div style={{ fontSize: `${baseFont}px`, lineHeight: 1.6, marginTop: "4px" }}>{renderRich(item.description)}</div>
             )}

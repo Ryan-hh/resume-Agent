@@ -1,23 +1,23 @@
 # 简历填写助手（Resume Assistant）
 
-一个纯前端的简历制作工具：**表单输入 → 实时预览 → 导出 PDF**，数据只存在浏览器本地，无需注册、无需服务器。
+一个纯前端的智能简历制作工具：**表单输入 → 实时预览 → AI 润色修改 → 导出 PDF**。数据只存在浏览器本地，无需注册、无需服务器，任意静态托管即可运行。
 
 ## 功能
 
-- **表单驱动**：基本信息、工作经历、项目经历、教育背景、专业技能、证书/荣誉六大模块；工作/项目/教育条目支持增删、排序
-- **实时预览**：右侧按 A4 真实尺寸显示，改一个字段立即刷新；窗口放不下时可滚动查看
-- **3 套模板**：简约单栏 / 经典双栏 / 侧边栏，同一份数据一键切换版式
-- **主题色**：7 种强调色，切换立即生效
-- **自动保存**：数据通过 Zustand persist 写入 localStorage，刷新不丢
-- **多份简历**：支持新建、复制、删除、切换多份简历（投不同岗位）
-- **导出 PDF**：浏览器打印样式输出 A4 单页（`导出 PDF` 按钮 → 另存为 PDF）
-- **备份迁移**：JSON 一键导出 / 导入，防止清缓存丢数据，也可跨设备迁移
+- **三栏工作台（VS Code 风格）**：左侧编辑表单、中间 A4 实时预览、右侧 AI 助手，面板可拖拽调宽，窄窗口自动收起 AI 栏
+- **AI 助手改简历**：把一段经历文本或一句修改指令丢给 AI，Agent 通过白名单工具直接修改简历（更新基本信息 / 增改经历条目 / 修改字段 / 删除条目 / 更新文本板块）；每次修改进入撤销历史，可 Ctrl+Z 逐步回退，也可一键撤销本次会话的全部改动
+- **AI 智能导入**：上传 PDF、图片、Word（DOCX）、TXT、JSON 简历，AI 自动识别并生成草稿——PDF 优先抽取文本层，扫描件自动转图走视觉模型；无需手动填写
+- **多模型配置**：AI 配置页接入多款大模型（OpenAI 兼容 / Gemini / Anthropic 协议自动适配），按需切换
+- **表单驱动**：基本信息、教育背景、工作经历、实习经历、项目经历、专业技能、自我评价、荣誉证书、自定义板块；条目支持增删、拖拽排序、显示开关、"至今"开关
+- **实时 A4 预览**：改一个字段立即刷新，内容超一页自动分页；多套模板一键切换版式
+- **样式设置**：主题色、字体、字号、行距、间距、图标模式、页头布局等，全部即时生效
+- **本地存储与备份**：数据通过 Zustand persist 写入 localStorage，刷新不丢；可在设置中选择本地文件夹开启自动备份（File System Access API）
+- **多份简历**：支持新建、复制、删除、切换多份简历，投不同岗位互不干扰
+- **导出**：A4 单页 PDF（打印样式）、长页 PDF、长图 PNG、Markdown，所见即所得
 
 ## 技术栈
 
-Vite · React 18 · TypeScript · Tailwind CSS v4 · Zustand（persist）· zod
-
-> 说明：表单采用受控组件直连 Zustand 单一数据源（比 react-hook-form 集成更简单可靠，适合实时预览场景）；zod 用于数据 schema 校验（JSON 导入时的结构检查）。
+Vite · React 18 · TypeScript · Tailwind CSS v4 · Zustand（persist）· framer-motion · react-resizable-panels · Tiptap（富文本）· pdfjs-dist（PDF 解析）· mammoth（DOCX 解析）· jspdf / html2canvas（导出）
 
 ## 快速开始
 
@@ -34,23 +34,25 @@ npm run preview  # 预览生产构建
 
 ```
 src/
-├── types/resume.ts          # 简历数据模型
-├── store/useResumeStore.ts  # Zustand store + localStorage 持久化
-├── data/sample.ts           # 示例数据 / 工具函数
-├── utils/io.ts              # JSON 导入导出、打印、校验
+├── pages/WorkbenchPage.tsx      # 三栏工作台（表单 + 预览 + AI 助手）
 ├── components/
-│   ├── Toolbar.tsx          # 顶部工具栏（模板/主题/简历管理/导入导出）
-│   ├── forms/               # 分组表单组件
-│   └── preview/             # A4 预览容器 + 3 套模板
-└── App.tsx                  # 左右分栏布局
+│   ├── editor/                  # 左侧编辑表单（basic / education / experience …）
+│   ├── preview/                 # A4 预览容器 + 模板渲染
+│   ├── ai/AIEditorPanel.tsx     # AI 助手对话面板
+│   └── dashboard/               # 首页 / 导入对话框
+├── lib/
+│   ├── agent/                   # AI Agent：agentLoop（循环引擎）+ resumeTools（白名单工具）
+│   ├── ai-request.ts            # 多协议 LLM 请求（OpenAI / Gemini / Anthropic）
+│   └── resumeImport.ts          # AI 导入提示词与解析清洗
+├── utils/resumeImport.ts        # PDF 抽文本 / 转图 / 图片压缩预处理
+├── store/useResumeStore.ts      # Zustand store + localStorage 持久化 + 撤销重做
+└── types/resume.ts              # 简历数据模型
 ```
 
 ## 设计要点
 
-- **无后端**：所有能力（存储、导出、校验）均由浏览器原生 API 完成，静态托管即可运行
+- **无后端**：存储、导入解析、导出全部由浏览器原生能力完成，静态托管即可运行
+- **受控表单 + store 直连**：所有编辑组件直连 Zustand 单一数据源，避免双向同步不一致；selector 返回稳定引用，规避无限重渲染
 - **打印即 PDF**：预览区即打印区，通过 `@media print` 隐藏工具栏与表单、还原 A4 原尺寸，保证所见即所得
-- **受控表单 + store 直连**：避免双向同步不一致；zustand selector 均返回稳定引用，规避无限重渲染
-
-## 与 Magic Resume 的关系
-
-本项目**仅参考** Magic Resume（JOYCEQL/magic-resume）的"表单 + 实时预览 + 本地存储 + 导出 PDF"实现思路，**不沿用其代码与技术栈**：不使用 TanStack Start 全栈框架、Tiptap 富文本、AI 模型接入，全部为自研轻量实现。
+- **Agent 工具白名单**：AI 只能通过固定工具集修改简历，每次写入走 store 的撤销历史，改错可回退；工具描述严格对齐表单可编辑字段
+- **导入兜底链路**：PDF 先抽文本（有文本层走文本模型），抽不到转图片走视觉模型；图片先压缩再转 Base64，保证任意模型都能解析

@@ -25,8 +25,8 @@ export const RESUME_IMPORT_PROMPT = `你是简历信息提取助手。请从提�
 输出结构（严格遵循）：
 {
   "title": "",
-  "basic": { "name": "", "title": "", "email": "", "phone": "", "location": "", "employementStatus": "", "birthDate": "" },
-  "education": [{ "school": "", "major": "", "degree": "", "startDate": "", "endDate": "", "gpa": "" }],
+  "basic": { "name": "", "title": "", "email": "", "phone": "", "location": "", "birthDate": "" },
+  "education": [{ "school": "", "major": "", "degree": "", "startDate": "", "endDate": "" }],
   "experience": [{ "company": "", "position": "", "startDate": "", "endDate": "", "details": [] }],
   "internship": [{ "company": "", "position": "", "startDate": "", "endDate": "", "details": [] }],
   "projects": [{ "name": "", "role": "", "startDate": "", "endDate": "", "description": [] }],
@@ -51,8 +51,8 @@ export const RESUME_IMPORT_TEXT_PROMPT = `你是简历信息提取助手。请�
 输出结构（严格遵循）：
 {
   "title": "",
-  "basic": { "name": "", "title": "", "email": "", "phone": "", "location": "", "employementStatus": "", "birthDate": "" },
-  "education": [{ "school": "", "major": "", "degree": "", "startDate": "", "endDate": "", "gpa": "" }],
+  "basic": { "name": "", "title": "", "email": "", "phone": "", "location": "", "birthDate": "" },
+  "education": [{ "school": "", "major": "", "degree": "", "startDate": "", "endDate": "" }],
   "experience": [{ "company": "", "position": "", "startDate": "", "endDate": "", "details": [] }],
   "internship": [{ "company": "", "position": "", "startDate": "", "endDate": "", "details": [] }],
   "projects": [{ "name": "", "role": "", "startDate": "", "endDate": "", "description": [] }],
@@ -88,7 +88,6 @@ export interface ImportedBasic {
   email: string;
   phone: string;
   location: string;
-  employementStatus: string;
   birthDate: string;
 }
 
@@ -98,7 +97,6 @@ export interface ImportedEducation {
   degree: string;
   startDate: string;
   endDate: string;
-  gpa: string;
 }
 
 export interface ImportedExperience {
@@ -154,7 +152,6 @@ const BASIC_FIELDS = [
   "email",
   "phone",
   "location",
-  "employementStatus",
   "birthDate",
 ] as const;
 
@@ -164,7 +161,6 @@ const EDUCATION_FIELDS = [
   "degree",
   "startDate",
   "endDate",
-  "gpa",
 ] as const;
 
 const EXPERIENCE_FIELDS = ["company", "position", "startDate", "endDate"] as const;
@@ -291,7 +287,6 @@ export function createResumeFromImport(imported: ImportedResume, fileName: strin
       school: item.school,
       major: item.major,
       degree: item.degree,
-      gpa: item.gpa || "",
       description: "",
       visible: true,
     }));
@@ -330,11 +325,9 @@ export function createResumeFromImport(imported: ImportedResume, fileName: strin
       email: basic.email,
       phone: basic.phone,
       location: basic.location,
-      employementStatus: basic.employementStatus,
       birthDate: basic.birthDate,
       jobIntention: basic.title || base.basic.jobIntention,
       gender: "",
-      workYears: "",
     },
     education,
     experience: imported.experience.filter((item) => item.company).map(toExperience),

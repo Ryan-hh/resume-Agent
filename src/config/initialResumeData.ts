@@ -20,13 +20,11 @@ export const initialResumeState: Omit<ResumeData, "id" | "createdAt" | "updatedA
   basic: {
     name: "张三",
     title: "高级前端工程师",
-    employementStatus: "离职",
     email: "zhangsan@example.com",
     phone: "13800138000",
     location: "北京市朝阳区",
     birthDate: "1998-05-20",
     gender: "男",
-    workYears: "5年以上",
     jobIntention: "高级前端工程师",
     politicalStatus: "群众",
     showAge: true,
@@ -35,7 +33,6 @@ export const initialResumeState: Omit<ResumeData, "id" | "createdAt" | "updatedA
       email: "Mail",
       phone: "Phone",
       birthDate: "CalendarRange",
-      employementStatus: "Briefcase",
       location: "MapPin",
     },
     photoConfig: DEFAULT_CONFIG,
@@ -43,9 +40,6 @@ export const initialResumeState: Omit<ResumeData, "id" | "createdAt" | "updatedA
       { id: "personal", label: "个人网站", value: "https://zhangsan.dev", icon: "Globe" },
     ],
     photo: "",
-    githubKey: "",
-    githubUseName: "",
-    githubContributionsVisible: false,
   },
   education: [
     {
@@ -56,7 +50,6 @@ export const initialResumeState: Omit<ResumeData, "id" | "createdAt" | "updatedA
       startDate: "2013-09",
       endDate: "2017-06",
       visible: true,
-      gpa: "",
       description:
         "<ul>\n<li>主修课程：数据结构、算法设计、操作系统、计算机网络、Web 开发技术</li>\n<li>专业排名前 5%，连续三年获得一等奖学金</li>\n<li>担任计算机协会技术部部长，组织多次技术分享会</li>\n</ul>",
     },
