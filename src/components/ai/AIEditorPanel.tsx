@@ -151,8 +151,8 @@ export function AIEditorPanel({
 
   return (
     <div className="flex h-full w-full min-w-0 flex-col border-l border-border bg-background">
-      {/* 头部 */}
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
+      {/* 头部（与左/中面板头部等高） */}
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <Bot className="h-4 w-4 text-primary" />
         </span>

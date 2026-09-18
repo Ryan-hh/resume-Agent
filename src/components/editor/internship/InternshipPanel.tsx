@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { ChevronDown, X, Eye, EyeOff, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 import { Reorder, useDragControls, motion, AnimatePresence } from "framer-motion";
 import { useResumeStore } from "@/store/useResumeStore";
@@ -122,7 +122,9 @@ function InternshipItem({
         </button>
         <button
           onClick={() => onDelete(item.id)}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          disabled={total <= 1}
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+          title={total <= 1 ? "至少保留一条" : "删除该条"}
         >
           <X className="h-3.5 w-3.5" />
         </button>

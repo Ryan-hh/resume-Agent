@@ -1,10 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { LayoutTemplate, ArrowLeft, Github, CircleHelp, SlidersHorizontal, FilePen } from "lucide-react";
+import { LayoutTemplate, ArrowLeft, Github, CircleHelp, SlidersHorizontal, FilePen, Undo2, Redo2, FileDown } from "lucide-react";
 import { useTranslations } from "@/i18n/zh";
+import { useResumeStore } from "@/store/useResumeStore";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FAQDialog } from "./FAQDialog";
+import { PdfExport } from "@/components/shared/PdfExport";
 import { LeftMode } from "@/components/editor/LeftWorkspace";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,10 @@ export function PreviewDock({
 }) {
   const t = useTranslations();
   const navigate = useNavigate();
+  const undo = useResumeStore((s) => s.undo);
+  const redo = useResumeStore((s) => s.redo);
+  const canUndo = useResumeStore((s) => s.canUndo());
+  const canRedo = useResumeStore((s) => s.canRedo());
 
   const modeButtons: { key: LeftMode; icon: React.ElementType; tooltip: string }[] = [
     { key: "content", icon: FilePen, tooltip: "内容编辑" },
@@ -52,6 +58,23 @@ export function PreviewDock({
 
         <div className="my-0.5 h-px w-6 bg-border" />
 
+        {/* 撤销 / 重做 / 导出 */}
+        <DockButton tooltip="撤销 (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
+          <Undo2 className="h-4 w-4" />
+        </DockButton>
+        <DockButton tooltip="重做 (Ctrl+Y)" onClick={redo} disabled={!canRedo}>
+          <Redo2 className="h-4 w-4" />
+        </DockButton>
+        <PdfExport
+          trigger={
+            <DockButton tooltip={t("previewDock.export.tooltip")}>
+              <FileDown className="h-4 w-4" />
+            </DockButton>
+          }
+        />
+
+        <div className="my-0.5 h-px w-6 bg-border" />
+
         {/* 返回仪表盘 */}
         <DockButton tooltip={t("previewDock.backToDashboard")} onClick={() => navigate("/")}>
           <ArrowLeft className="h-4 w-4" />
@@ -82,16 +105,22 @@ function DockButton({
   children,
   tooltip,
   onClick,
+  disabled,
 }: {
   children: React.ReactNode;
   tooltip: string;
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <Tooltip content={tooltip} side="left">
       <button
         onClick={onClick}
-        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        disabled={disabled}
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+          disabled && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted-foreground"
+        )}
       >
         {children}
       </button>

@@ -33,11 +33,9 @@ export default function EasterEggPage() {
       </motion.div>
 
       {/* 打赏板块：此页唯一内容 */}
-      <div className="mx-auto max-w-2xl">
-        <motion.div {...cardMotion}>
-          <TipJarCard />
-        </motion.div>
-      </div>
+      <motion.div {...cardMotion}>
+        <TipJarCard />
+      </motion.div>
     </div>
   );
 }

@@ -138,12 +138,19 @@ export default function TemplatesPage() {
       {/* 模板卡片：与「我的简历」一致的递增入场 + 信息叠在预览图上 */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <AnimatePresence mode="popLayout">
-          {filtered.map((template) => (
+          {filtered.map((template, index) => (
             <motion.div
               key={template.id}
               layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              transition={{
+                delay: index * 0.06,
+                duration: 0.25,
+                ease: "easeOut",
+                layout: { type: "tween", duration: 0.25, ease: "easeOut" },
+              }}
               onClick={() => handleUse(template.id)}
               className="group relative cursor-pointer select-none overflow-hidden rounded-2xl border border-border/70 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.08)]"
             >

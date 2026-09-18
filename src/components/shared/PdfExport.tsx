@@ -24,7 +24,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function PdfExport() {
+export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
   const t = useTranslations();
   const activeResume = useResumeStore((s) => s.activeResume);
   const [open, setOpen] = React.useState(false);
@@ -148,11 +148,15 @@ export function PdfExport() {
 
   return (
     <>
-      <Tooltip content={t("previewDock.export.tooltip")}>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="导出">
-          <FileDown className="h-4 w-4" />
-        </Button>
-      </Tooltip>
+      {trigger ? (
+        <span onClick={() => setOpen(true)}>{trigger}</span>
+      ) : (
+        <Tooltip content={t("previewDock.export.tooltip")}>
+          <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="导出">
+            <FileDown className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>

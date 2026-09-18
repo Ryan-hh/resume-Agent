@@ -2,20 +2,13 @@ import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { FileText, LayoutTemplate, Settings, Sparkles, ChevronLeft, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBackupStore } from "@/store/useBackupStore";
-import { BackupSidebarItem } from "@/components/dashboard/BackupSidebarItem";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { BackupBanner } from "@/components/dashboard/BackupBanner";
 
 // 仪表盘布局：左侧可折叠导航 + 内容区
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState(false);
-  const refreshBackup = useBackupStore((s) => s.refresh);
-
-  // 启动时检测备份目录状态（侧边栏入口 / 引导横幅 / 设置页共用）
-  React.useEffect(() => {
-    refreshBackup();
-  }, [refreshBackup]);
 
   const navItems = [
     { to: "/", icon: FileText, label: "我的简历", end: true },
@@ -91,11 +84,19 @@ export default function DashboardLayout() {
           ))}
         </nav>
 
-        {/* 底部：自动备份 + 收起 */}
+        {/* 主题切换：固定在导航下方 */}
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-3 border-t border-border/80 px-3 py-2",
+            collapsed && "justify-center px-0"
+          )}
+        >
+          <ThemeToggle />
+          {!collapsed && <span className="text-sm text-muted-foreground">主题</span>}
+        </div>
+
+        {/* 底部：收起 */}
         <div className="flex shrink-0 flex-col border-t border-border/80">
-          <div className="px-2 py-1.5">
-            <BackupSidebarItem collapsed={collapsed} />
-          </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn(

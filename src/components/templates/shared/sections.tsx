@@ -391,7 +391,6 @@ export function ExperienceSection({
   const baseFont = globalSettings.baseFontSize || 14;
   const themeColor = globalSettings.themeColor || "#000000";
   const items = experiences.filter((e) => e.visible !== false && hasExperienceContent(e));
-  if (items.length === 0) return null;
   return (
     <SectionWrapper sectionId="experience" style={style}>
       <PageBlock col={0} keepNext>
@@ -437,7 +436,6 @@ export function EducationSection({
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
   const items = education.filter((e) => e.visible !== false && hasEducationContent(e));
-  if (items.length === 0) return null;
   return (
     <SectionWrapper sectionId="education" style={style}>
       <PageBlock col={0} keepNext>
@@ -485,7 +483,6 @@ export function ProjectSection({
   const baseFont = globalSettings.baseFontSize || 14;
   const themeColor = globalSettings.themeColor || "#000000";
   const items = projects.filter((p) => p.visible !== false && hasProjectContent(p));
-  if (items.length === 0) return null;
   return (
     <SectionWrapper sectionId="projects" style={style}>
       <PageBlock col={0} keepNext>
@@ -530,7 +527,6 @@ export function SkillSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  if (!skill) return null;
   return (
     <SectionWrapper sectionId="skills" style={style}>
       <PageBlock col={0} keepNext>
@@ -560,7 +556,6 @@ export function SelfEvaluationSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  if (!content) return null;
   return (
     <SectionWrapper sectionId="selfEvaluation" style={style}>
       <PageBlock col={0} keepNext>
@@ -602,7 +597,6 @@ export function CustomSection({
             .filter(Boolean)
             .join("\n")
         : "";
-  if (!text || !text.trim()) return null;
   return (
     <SectionWrapper sectionId={sectionId} style={style}>
       <PageBlock col={0} keepNext>
@@ -632,7 +626,6 @@ export function CertificatesSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  if (!certificatesContent || !certificatesContent.trim()) return null;
   return (
     <SectionWrapper sectionId="certificates" style={style}>
       <PageBlock col={0} keepNext>
@@ -664,7 +657,6 @@ export function InternshipSection({
   const baseFont = globalSettings.baseFontSize || 14;
   const themeColor = globalSettings.themeColor || "#000000";
   const items = internships.filter((e) => e.visible !== false && hasExperienceContent(e));
-  if (items.length === 0) return null;
   return (
     <SectionWrapper sectionId="internship" style={style}>
       <PageBlock col={0} keepNext>

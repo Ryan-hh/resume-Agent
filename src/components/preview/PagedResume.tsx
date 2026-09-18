@@ -8,24 +8,25 @@ import { collectPageBlocks, paginateBlocks, clonePageRoot } from "./pagination";
 // A4 分页渲染：把简历内容按「标题块 + 条目块」测量后拆分为多个 A4 页面。
 // 内容连续流动——板块内部条目可在页间断开，超出一页的内容自动流到下一页；
 // 每个页面是独立的白纸（794px × 1123px），不满一页也按一页 A4 显示。
-// scale < 1 时整份预览等比缩小（宽度收窄时保持比例，不出现横向滚动）。
+// 缩放由外层 PreviewPanel 写入的 CSS 变量 --preview-scale 驱动（宽度收窄时等比缩小，
+// 保持 A4 比例，不出现横向滚动）。缩放不进入 React state：
+// 面板显隐/拖拽的宽度动画期间只做纯 CSS transform（GPU 合成），不会触发分页重建。
 export function PagedResume({
   resume,
   templateId,
   id,
   className,
-  scale = 1,
 }: {
   resume: ResumeData;
   templateId: string;
   id?: string;
   className?: string;
-  scale?: number;
 }) {
   const measureRef = React.useRef<HTMLDivElement>(null);
   const pagesRef = React.useRef<HTMLDivElement>(null);
   const [hostH, setHostH] = React.useState(PREVIEW_HEIGHT_PX);
 
+  // 仅当内容/模板变化时重建分页；缩放（--preview-scale）变化不在此列
   React.useLayoutEffect(() => {
     const measure = measureRef.current;
     const target = pagesRef.current;
@@ -67,10 +68,10 @@ export function PagedResume({
       }
     });
 
-    // 测量缩放后的宿主高度（等比缩小后布局占位正确）
+    // 测量未缩放的真实高度（transform 不影响布局尺寸），用于宿主占位
     const h = target.getBoundingClientRect().height || PREVIEW_HEIGHT_PX;
     setHostH(h);
-  }, [resume, templateId, scale]);
+  }, [resume, templateId]);
 
   return (
     <>
@@ -89,14 +90,20 @@ export function PagedResume({
       >
         <ResumeTemplateComponent templateId={templateId} resume={resume} />
       </div>
-      {/* 缩放宿主：占位宽高随 scale 等比缩小，内部页面通过 transform 缩放渲染。
+      {/* 缩放宿主：占位宽高随 CSS 变量等比缩小，内部页面通过 transform 缩放渲染。
           overflow hidden 阻止未缩放的子页布局尺寸向滚动容器传播（横向溢出/纵向空白） */}
-      <div style={{ width: PREVIEW_WIDTH_PX * scale, height: hostH * scale, overflow: "hidden" }}>
+      <div
+        style={{
+          width: `calc(${PREVIEW_WIDTH_PX}px * var(--preview-scale, 1))`,
+          height: `calc(${hostH}px * var(--preview-scale, 1))`,
+          overflow: "hidden",
+        }}
+      >
         <div
           ref={pagesRef}
           id={id}
           className={className}
-          style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+          style={{ transform: "scale(var(--preview-scale, 1))", transformOrigin: "top left" }}
         />
       </div>
     </>
