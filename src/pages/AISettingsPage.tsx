@@ -164,9 +164,10 @@ export default function AISettingsPage() {
   }, [nameInput, websiteInput, keyInput, modelInput, baseUrlInput, protocolInput]);
 
   const customProfiles = models.filter((m) => m.provider === "custom");
-  const configuredCount = AI_PROVIDERS.filter((p) =>
-    isModelConfigured(getProviderProfile(models, p))
-  ).length;
+  // 右上角统计：预设供应商 + 已配置完整的自定义供应商都算
+  const configuredCount =
+    AI_PROVIDERS.filter((p) => isModelConfigured(getProviderProfile(models, p))).length +
+    customProfiles.filter((p) => isModelConfigured(p)).length;
   const isCurrent = !!selectedProfile && textModelId === selectedProfile.id;
 
   // ---- 动作 ----

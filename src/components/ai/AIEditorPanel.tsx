@@ -150,7 +150,7 @@ export function AIEditorPanel({
   };
 
   return (
-    <div className="flex h-full w-full min-w-0 flex-col border-l border-border bg-background">
+    <div className="flex h-full w-full min-w-0 flex-col bg-background">
       {/* 头部（与左/中面板头部等高） */}
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">

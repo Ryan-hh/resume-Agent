@@ -136,7 +136,7 @@ export function EditPanel() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden border-r border-border bg-background">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       {/* 顶部：当前模块标题（非基本信息可重命名 + 恢复默认）+ 快捷添加 */}
       <div className="flex min-w-0 items-center gap-2 border-b border-border px-4 py-2.5">
         <SectionIcon id={activeSectionId} className="h-4 w-4 shrink-0 text-muted-foreground" />
