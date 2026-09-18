@@ -1,5 +1,8 @@
 import React from "react";
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   Upload,
   X,
   Plus,
@@ -41,6 +44,10 @@ const GENDER_OPTIONS = [
 export function BasicPanel() {
   const basic = useResumeStore((s) => s.activeResume?.basic);
   const updateBasicInfo = useResumeStore((s) => s.updateBasicInfo);
+  const gs = useResumeStore((s) => s.activeResume?.globalSettings) || {};
+  const updateGlobalSettings = useResumeStore((s) => s.updateGlobalSettings);
+
+  const useIconMode = gs.useIconMode ?? false;
 
   if (!basic) return null;
 
@@ -164,7 +171,16 @@ export function BasicPanel() {
 
       {/* 个人信息（字段顺序固定） */}
       <section className="rounded-xl border border-border p-4">
-        <h3 className="mb-3 text-sm font-semibold">个人信息</h3>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">个人信息</h3>
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+            图标模式
+            <Switch
+              checked={useIconMode}
+              onCheckedChange={(v) => updateGlobalSettings({ useIconMode: v })}
+            />
+          </label>
+        </div>
         <div className="grid grid-cols-1 gap-3 @[17rem]:grid-cols-2">
           <Field label={<FieldLabel icon={User} text="姓名" />}>
             <Input
@@ -239,11 +255,38 @@ export function BasicPanel() {
             />
           </Field>
         </div>
+
+        {/* 顶部对齐：控制姓名/职位/信息字段的整体对齐 */}
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2">
+          <span className="text-xs text-muted-foreground">顶部对齐</span>
+          <div className="flex items-center gap-1">
+            {[
+              { value: "left" as const, label: "靠左", icon: AlignLeft },
+              { value: "center" as const, label: "居中", icon: AlignCenter },
+              { value: "right" as const, label: "靠右", icon: AlignRight },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => updateBasicInfo({ layout: opt.value })}
+                className={cn(
+                  "flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-colors",
+                  (basic.layout || "left") === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
+              >
+                <opt.icon className="h-3 w-3" />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* 自定义字段 */}
       <CustomFields
-        fields={basic.customFields || []}
+        fields={Array.isArray(basic.customFields) ? basic.customFields : []}
         onChange={(customFields) => updateBasicInfo({ customFields })}
       />
     </div>

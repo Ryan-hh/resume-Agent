@@ -1,31 +1,13 @@
 // 简历数据模型（结构对齐 magic-resume，保证功能等价）
 
 export interface PhotoConfig {
-  width: number;
-  height: number;
-  aspectRatio: "1:1" | "4:3" | "3:4" | "16:9" | "custom";
-  borderRadius: "none" | "medium" | "full" | "custom";
-  customBorderRadius: number;
+  borderRadius: "none" | "medium" | "full";
   visible?: boolean;
-  // 照片裁切调整：缩放与偏移（百分比，相对照片显示尺寸）
-  scale?: number;
-  offsetX?: number;
-  offsetY?: number;
-  // 照片在裁剪框内等比适配后的显示尺寸（px，相对 210×300 裁剪框）
-  photoW?: number;
-  photoH?: number;
 }
 
 export const DEFAULT_CONFIG: PhotoConfig = {
-  width: 90,
-  height: 120,
-  aspectRatio: "3:4",
   borderRadius: "none",
-  customBorderRadius: 0,
   visible: true,
-  scale: 1,
-  offsetX: 0,
-  offsetY: 0,
 };
 
 // 头像圆角选项
@@ -36,36 +18,7 @@ export const PHOTO_RADIUS_OPTIONS: { value: PhotoConfig["borderRadius"]; label: 
 ];
 
 export const getPhotoRadius = (c?: PhotoConfig): number =>
-  c?.borderRadius === "custom"
-    ? (c.customBorderRadius ?? 0)
-    : (PHOTO_RADIUS_OPTIONS.find((o) => o.value === c?.borderRadius)?.radius ?? 0);
-
-export const getRatioMultiplier = (ratio: PhotoConfig["aspectRatio"]) => {
-  switch (ratio) {
-    case "4:3":
-      return 3 / 4;
-    case "3:4":
-      return 4 / 3;
-    case "16:9":
-      return 9 / 16;
-    default:
-      return 1;
-  }
-};
-
-export const getBorderRadiusValue = (config?: PhotoConfig) => {
-  if (!config) return "0";
-  switch (config.borderRadius) {
-    case "medium":
-      return "0.5rem";
-    case "full":
-      return "9999px";
-    case "custom":
-      return `${config.customBorderRadius}px`;
-    default:
-      return "0";
-  }
-};
+  PHOTO_RADIUS_OPTIONS.find((o) => o.value === c?.borderRadius)?.radius ?? 0;
 
 export interface BasicFieldType {
   id: string;
@@ -156,8 +109,6 @@ export type GlobalSettings = {
   headerSize?: number | undefined;
   subheaderSize?: number | undefined;
   useIconMode?: boolean | undefined;
-  centerSubtitle?: boolean | undefined;
-  flexibleHeaderLayout?: boolean | undefined;
   autoOnePage?: boolean | undefined;
   pageBreakLinesVisible?: boolean | undefined;
 };

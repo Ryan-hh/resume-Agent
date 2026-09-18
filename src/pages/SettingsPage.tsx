@@ -15,7 +15,6 @@ import {
   FolderOpen,
   Loader2,
 } from "lucide-react";
-import { useTranslations } from "@/i18n/zh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { useBackupStore } from "@/store/useBackupStore";
@@ -36,7 +35,6 @@ import { cn } from "@/lib/utils";
 
 // 设置页：备份目录配置（选择文件夹 → 自动保存简历与 AI 配置）
 export default function SettingsPage() {
-  const t = useTranslations();
   const supported = useBackupStore((s) => s.supported);
   const isConfigured = useBackupStore((s) => s.isConfigured);
   const backupDir = useBackupStore((s) => s.backupDir);
@@ -51,11 +49,11 @@ export default function SettingsPage() {
     const result = await configure();
     setConfiguring(false);
     if (result.status === "error") {
-      toast.error(result.message || t("dashboard.settings.backup.error"));
+      toast.error(result.message || "配置备份目录失败");
       return;
     }
     if (result.status === "canceled") return;
-    toast.success(t("dashboard.settings.backup.configuredMsg"));
+    toast.success("备份目录已配置");
     // 开启成功后，把现有简历与 AI 配置立即全部写入备份文件夹
     const resumes = useResumeStore.getState().resumes;
     Object.values(resumes).forEach((resume) => {
@@ -69,7 +67,7 @@ export default function SettingsPage() {
 
   const handleRemove = async () => {
     await remove();
-    toast.success(t("dashboard.settings.backup.removed"));
+    toast.success("已移除备份目录");
   };
 
   // 关于板块信息行（均为应用内已确认的事实）
@@ -104,7 +102,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
             <Settings2 className="h-6 w-6 text-primary" />
-            {t("dashboard.settings.title")}
+            设置
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">配置自动备份文件夹与应用信息</p>
         </div>
@@ -124,9 +122,9 @@ export default function SettingsPage() {
                   <FolderSync className="h-5 w-5 text-primary" />
                 </span>
                 <div>
-                  <CardTitle className="text-[15px]">{t("dashboard.settings.backup.title")}</CardTitle>
+                  <CardTitle className="text-[15px]">本地备份</CardTitle>
                   <CardDescription className="mt-1 text-xs">
-                    {t("dashboard.settings.backup.description")}
+                    选择一个本地文件夹，简历将自动同步为 JSON 文件，防止数据丢失。
                   </CardDescription>
                 </div>
               </div>
@@ -174,7 +172,7 @@ export default function SettingsPage() {
                         ) : (
                           <FolderSync className="h-3.5 w-3.5" />
                         )}
-                        {t("dashboard.settings.backup.change")}
+                        更换目录
                       </Button>
                       <Button
                         variant="ghost"
@@ -183,7 +181,7 @@ export default function SettingsPage() {
                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        {t("dashboard.settings.backup.remove")}
+                        移除
                       </Button>
                     </span>
                   </div>
@@ -225,9 +223,9 @@ export default function SettingsPage() {
                   <Info className="h-5 w-5 text-primary" />
                 </span>
                 <div>
-                  <CardTitle className="text-[15px]">{t("dashboard.settings.about.title")}</CardTitle>
+                  <CardTitle className="text-[15px]">关于</CardTitle>
                   <CardDescription className="mt-1 text-xs">
-                    {t("dashboard.settings.about.description")}
+                    简历助手 v2.0 — 数据仅保存在本地浏览器（localStorage）。
                   </CardDescription>
                 </div>
               </div>

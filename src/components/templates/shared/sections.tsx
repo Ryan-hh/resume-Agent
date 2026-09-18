@@ -6,7 +6,6 @@ import {
   Experience,
   GlobalSettings,
   Project,
-  getBorderRadiusValue,
   getPhotoRadius,
 } from "@/types/resume";
 import { formatDateRange, formatDateString } from "@/lib/utils";
@@ -222,17 +221,19 @@ export function BaseInfoSection({
 
   const allFields = [
     ...getOrderedFields,
-    ...(basic.customFields
-      ?.filter((field) => field.visible !== false && Boolean(field.value))
-      .map((field) => ({
-        key: field.id,
-        value: field.value,
-        icon: field.icon,
-        label: field.label,
-        visible: true,
-        custom: true,
-        displayLabel: field.displayLabel,
-      })) || []),
+    ...(Array.isArray(basic.customFields)
+      ? basic.customFields
+          .filter((field) => field.visible !== false && Boolean(field.value))
+          .map((field) => ({
+            key: field.id,
+            value: field.value,
+            icon: field.icon,
+            label: field.label,
+            visible: true,
+            custom: true,
+            displayLabel: field.displayLabel,
+          }))
+      : []),
   ];
 
   const name = basic?.name || "";

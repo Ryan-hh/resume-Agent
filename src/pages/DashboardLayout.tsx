@@ -4,11 +4,18 @@ import { FileText, LayoutTemplate, Settings, Sparkles, ChevronLeft, Gift } from 
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { BackupBanner } from "@/components/dashboard/BackupBanner";
+import { useBackupStore } from "@/store/useBackupStore";
 
 // 仪表盘布局：左侧可折叠导航 + 内容区
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState(false);
+  // 挂载时从 IndexedDB 恢复备份目录状态（句柄已持久化，刷新后需重新读取，
+  // 否则设置页会显示"未配置"）
+  const refreshBackup = useBackupStore((s) => s.refresh);
+  React.useEffect(() => {
+    void refreshBackup();
+  }, [refreshBackup]);
 
   const navItems = [
     { to: "/", icon: FileText, label: "我的简历", end: true },

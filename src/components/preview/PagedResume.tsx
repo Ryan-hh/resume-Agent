@@ -113,7 +113,9 @@ export function PagedResume({
 // 「智能一页」入口按钮：与界面风格统一的小胶囊，功能暂未开放
 function makeSmartOnePageButton(): HTMLElement {
   const wrap = document.createElement("div");
-  wrap.className = "flex w-full flex-shrink-0 justify-center";
+  // 容器宽度固定为页面宽度（PREVIEW_WIDTH_PX），与页面一起被 scale 等比缩放：
+  // 若用 w-full 会跟随外层 target 的布局宽度（被 scale 后窄于页面），按钮会偏左不居中
+  wrap.style.cssText = `display:flex;width:${PREVIEW_WIDTH_PX}px;flex-shrink:0;justify-content:center;`;
 
   const btn = document.createElement("button");
   btn.type = "button";

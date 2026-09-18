@@ -141,11 +141,15 @@ a[aria-disabled="true"] {
   background-color: rgb(255 255 255 / 0.38);
 }
 
-/* 预览滚动区（A4 真实尺寸 + 可滚动） */
+/* 预览滚动区（A4 真实尺寸 + 可滚动）：不显示滚动条（滑轮），内容仍可滚动 */
 .preview-scroll {
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.preview-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 /* A4 纸张 */

@@ -5,7 +5,9 @@ import { FileJson, FileImage, Loader2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
 import { isModelConfigured, toAIConnection } from "@/config/ai-models";
-import { AIRequestError, chatCompletion, ChatMessage } from "@/lib/ai-request";
+import { AIRequestError, toAIError } from "@/lib/agent/langchain/errors";
+import { createChatModel } from "@/lib/agent/langchain/modelFactory";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import {
   ResumeImportError,
   RESUME_IMPORT_PROMPT,
@@ -26,7 +28,6 @@ import { cn } from "@/lib/utils";
 import type { ResumeData } from "@/types/resume";
 
 const IMPORT_TIMEOUT_MS = 120_000;
-const IMPORT_MAX_TOKENS = 8192;
 
 function importErrorMessage(error: unknown): string {
   if (error instanceof ResumeImportError) {
@@ -175,37 +176,32 @@ export function ImportResumeDialog({
         throw new ResumeImportError("unsupportedFormat");
       }
 
-      // 3. AI 解析：文本负载走文本模型，图片负载走视觉模型
-      let messages: ChatMessage[];
+      // 3. AI 解析：文本负载走文本模型，图片负载走视觉模型（多模态消息）
+      const model = createChatModel(connection);
+      let messages: (SystemMessage | HumanMessage)[];
       if (payload.kind === "text") {
         messages = [
-          { role: "system", content: RESUME_IMPORT_TEXT_PROMPT },
-          { role: "user", content: payload.text },
+          new SystemMessage(RESUME_IMPORT_TEXT_PROMPT),
+          new HumanMessage(payload.text),
         ];
       } else {
         messages = [
-          { role: "system", content: RESUME_IMPORT_PROMPT },
-          {
-            role: "user",
+          new SystemMessage(RESUME_IMPORT_PROMPT),
+          new HumanMessage({
             content: [
               { type: "text", text: "请从这份简历中提取信息并输出 JSON。" },
-              ...payload.images.map((image) => ({
-                type: "image_url" as const,
-                image_url: image,
-              })),
+              ...payload.images.map((image) => ({ type: "image_url" as const, image_url: image })),
             ],
-          },
+          }),
         ];
       }
-      const raw = await chatCompletion(
-        connection,
-        messages,
-        IMPORT_MAX_TOKENS,
-        IMPORT_TIMEOUT_MS
-      );
+      const raw = await model.invoke(messages, {
+        signal: AbortSignal.timeout(IMPORT_TIMEOUT_MS),
+      });
+      const rawText = typeof raw.content === "string" ? raw.content : String(raw.content);
 
       // 4. 解析 + 校验 + 转简历数据
-      const parsed = parseJsonPayload(raw);
+      const parsed = parseJsonPayload(rawText);
       const { resume: imported, warnings } = validateImportedResume(parsed);
       const fileName = file.name.replace(/\.[^.]+$/, "").trim() || "导入的简历";
       const resume = createResumeFromImport(imported, fileName);
@@ -218,7 +214,7 @@ export function ImportResumeDialog({
       }
     } catch (error) {
       console.error("AI 导入失败:", error);
-      toast.error(importErrorMessage(error));
+      toast.error(importErrorMessage(error instanceof ResumeImportError ? error : toAIError(error)));
     } finally {
       setImportingType(null);
       if (aiFileInputRef.current) aiFileInputRef.current.value = "";

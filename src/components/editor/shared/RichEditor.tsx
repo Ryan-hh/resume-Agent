@@ -17,7 +17,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toAIConnection } from "@/config/ai-models";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
-import { chatCompletion } from "@/lib/ai-request";
+import { createChatModel } from "@/lib/agent/langchain/modelFactory";
+import { describeAIError } from "@/lib/agent/langchain/errors";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 const MAX_INDENT = 6;
 const INDENT_STEP_PX = 24;
@@ -194,22 +196,18 @@ export function RichEditor({
     }
     setPolishing(true);
     try {
-      const result = await chatCompletion(toAIConnection(profile), [
-        {
-          role: "system",
-          content:
-            "你是一位专业的简历润色助手。用户会给你一段简历模块的内容，请在不改变事实与结构的前提下优化表达，使语言更精炼、专业、有力；保留原有的分段、列表与要点；直接输出润色后的内容，不要任何解释或前后缀。",
-        },
-        { role: "user", content: text },
+      const model = createChatModel(toAIConnection(profile));
+      const result = await model.invoke([
+        new SystemMessage(
+          "你是一位专业的简历润色助手。用户会给你一段简历模块的内容，请在不改变事实与结构的前提下优化表达，使语言更精炼、专业、有力；保留原有的分段、列表与要点；直接输出润色后的内容，不要任何解释或前后缀。"
+        ),
+        new HumanMessage(text),
       ]);
-      editor.commands.setContent(result, { emitUpdate: true });
+      const content = typeof result.content === "string" ? result.content : String(result.content);
+      editor.commands.setContent(content, { emitUpdate: true });
       toast.success("润色完成，已更新内容");
     } catch (error) {
-      let message = "润色失败，请稍后重试";
-      if (error instanceof Error) {
-        message = error.message || message;
-      }
-      toast.error(message);
+      toast.error(describeAIError(error));
     } finally {
       setPolishing(false);
     }

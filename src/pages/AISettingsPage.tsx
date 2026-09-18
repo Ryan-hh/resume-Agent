@@ -26,7 +26,9 @@ import {
   type AIProtocol,
 } from "@/config/ai-models";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
-import { testAIConnection, AIRequestError } from "@/lib/ai-request";
+import { createChatModel } from "@/lib/agent/langchain/modelFactory";
+import { AIRequestError, toAIError } from "@/lib/agent/langchain/errors";
+import { HumanMessage } from "@langchain/core/messages";
 import { Card } from "@/components/ui/primitives";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -73,6 +75,18 @@ const PROTOCOL_LABELS: Record<AIProtocol, string> = {
   anthropic: "Anthropic",
 };
 
+// 返回"第一个已配置完整（有 API Key）"的供应商 id：
+// 按预设供应商顺序（OpenAI 优先）找，预设都没有则找自定义的第一个；
+// 全部未配置时兜底返回第一个预设（OpenAI）。
+function firstConfiguredProviderId(models: AIModelProfile[]): string {
+  for (const p of AI_PROVIDERS) {
+    if (isModelConfigured(getProviderProfile(models, p))) return `provider:${p}`;
+  }
+  const custom = models.find((m) => m.provider === "custom" && isModelConfigured(m));
+  if (custom) return custom.id;
+  return `provider:${AI_PROVIDERS[0]}`;
+}
+
 function testErrorMessage(error: unknown): string {
   let message = "连接失败，请检查配置";
   if (error instanceof AIRequestError) {
@@ -100,7 +114,10 @@ export default function AISettingsPage() {
   const deleteModel = useAIConfigStore((s) => s.deleteModel);
   const assignModel = useAIConfigStore((s) => s.assignModel);
 
-  const [selectedId, setSelectedId] = React.useState("provider:deepseek");
+  // 初始选中：第一个已配置完整（有 API Key）的供应商；全部未配置时兜底 OpenAI
+  const [selectedId, setSelectedId] = React.useState<string>(
+    () => firstConfiguredProviderId(useAIConfigStore.getState().models)
+  );
 
   const selectedProfile = React.useMemo(() => {
     const found = models.find((m) => m.id === selectedId);
@@ -192,11 +209,14 @@ export default function AISettingsPage() {
         model,
         baseUrl: baseUrlInput.trim().replace(/\/+$/, ""),
       };
-      await testAIConnection(connection);
+      // 测试连接：直接用 LangChain 模型发一条最小请求，能收到回复即视为可用
+      const modelInstance = createChatModel(connection);
+      await modelInstance.invoke([new HumanMessage("ping")]);
       setTestState({ status: "success" });
       toast.success("连接成功，该 Key 与模型可用");
     } catch (error) {
-      const message = testErrorMessage(error);
+      const mapped = toAIError(error);
+      const message = testErrorMessage(mapped);
       setTestState({ status: "error", message });
       toast.error(message);
     }
@@ -221,7 +241,8 @@ export default function AISettingsPage() {
   const handleDeleteCurrent = () => {
     if (!selectedProfile || isPreset) return;
     deleteModel(selectedProfile.id);
-    setSelectedId("provider:deepseek");
+    // 删除后跳转到第一个已配置完整的供应商（预设优先；无则找自定义；再兜底 OpenAI）
+    setSelectedId(firstConfiguredProviderId(useAIConfigStore.getState().models));
     setDeleteOpen(false);
     toast.success("自定义供应商已删除");
   };

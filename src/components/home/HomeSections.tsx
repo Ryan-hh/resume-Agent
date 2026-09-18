@@ -2,7 +2,6 @@ import React from "react";
 import { motion, useScroll } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { FileText } from "lucide-react";
-import { useTranslations } from "@/i18n/zh";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,7 +16,6 @@ export function LandingHeader() {
   }, [scrollY]);
 
   const navigate = useNavigate();
-  const t = useTranslations();
 
   return (
     <motion.header
@@ -33,17 +31,16 @@ export function LandingHeader() {
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <FileText className="h-4 w-4" />
         </span>
-        <span className="text-sm font-semibold">{t("common.title")}</span>
+        <span className="text-sm font-semibold">简历助手</span>
       </button>
       <Button size="sm" onClick={() => navigate("/")}>
-        {t("home.hero.cta")}
+        立即开始
       </Button>
     </motion.header>
   );
 }
 
 export function HeroSection() {
-  const t = useTranslations();
   const navigate = useNavigate();
 
   return (
@@ -62,20 +59,20 @@ export function HeroSection() {
         className="relative z-10"
       >
         <span className="mb-6 inline-block rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
-          {t("home.hero.badge")}
+          免费 · 本地存储 · 隐私安全
         </span>
         <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
-          {t("home.hero.title")}
+          轻松打造你的专属简历
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          {t("home.hero.subtitle")}
+          实时预览、多套模板、一键导出 PDF，所有数据仅保存在你的浏览器中。
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Button size="lg" onClick={() => navigate("/")}>
-            {t("home.hero.cta")}
+            立即开始
           </Button>
           <Button size="lg" variant="outline" onClick={() => navigate("/templates")}>
-            {t("home.hero.secondary")}
+            浏览模板
           </Button>
         </div>
       </motion.div>
@@ -103,19 +100,18 @@ export function AnimatedFeature({
 }
 
 export function FeaturesSection() {
-  const t = useTranslations();
   const features = [
-    { title: t("home.features.realtime"), desc: t("home.features.realtimeDesc"), icon: "⚡" },
-    { title: t("home.features.templates"), desc: t("home.features.templatesDesc"), icon: "🎨" },
-    { title: t("home.features.privacy"), desc: t("home.features.privacyDesc"), icon: "🔒" },
-    { title: t("home.features.export"), desc: t("home.features.exportDesc"), icon: "📤" },
+    { title: "实时预览", desc: "编辑与预览同步更新，所见即所得。", icon: "⚡" },
+    { title: "九套模板", desc: "经典、极简、时间线等多种风格，一键切换。", icon: "🎨" },
+    { title: "隐私安全", desc: "数据仅存于本地浏览器，绝不上传。", icon: "🔒" },
+    { title: "多样导出", desc: "PDF、长图、Markdown、JSON 自由导出。", icon: "📤" },
   ];
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-20">
       <AnimatedFeature>
-        <h2 className="text-center text-2xl font-bold sm:text-3xl">{t("home.features.title")}</h2>
-        <p className="mt-2 text-center text-sm text-muted-foreground">{t("home.features.subtitle")}</p>
+        <h2 className="text-center text-2xl font-bold sm:text-3xl">为什么选择简历助手</h2>
+        <p className="mt-2 text-center text-sm text-muted-foreground">聚焦简历制作本身，简洁而强大</p>
       </AnimatedFeature>
       <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f, i) => (
@@ -135,17 +131,16 @@ export function FeaturesSection() {
 }
 
 export function CTASection() {
-  const t = useTranslations();
   const navigate = useNavigate();
   return (
     <section className="px-6 py-20">
       <AnimatedFeature>
         <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-background to-blue-400/5 p-12 text-center">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-blob" />
-          <h2 className="text-2xl font-bold sm:text-3xl">{t("home.cta.title")}</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">{t("home.cta.subtitle")}</p>
+          <h2 className="text-2xl font-bold sm:text-3xl">现在就创建你的简历</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">无需注册，打开即用，所有数据留在本地。</p>
           <Button size="lg" className="mt-6" onClick={() => navigate("/")}>
-            {t("home.cta.button")}
+            免费开始
           </Button>
         </div>
       </AnimatedFeature>
@@ -154,14 +149,13 @@ export function CTASection() {
 }
 
 export function Footer() {
-  const t = useTranslations();
   const { theme, systemTheme, setTheme } = useTheme();
   const resolved = theme === "system" ? systemTheme : theme;
 
   return (
     <footer className="border-t border-border py-8">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
-        <span>{t("home.footer.madeWith")} · {t("home.footer.privacy")}</span>
+        <span>用 React 构建 · 数据仅保存在本地浏览器</span>
         <button
           onClick={() => setTheme(resolved === "dark" ? "light" : "dark")}
           className="rounded-md border border-border px-3 py-1.5 text-xs transition-colors hover:bg-accent"

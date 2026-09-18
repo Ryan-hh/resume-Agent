@@ -10,8 +10,6 @@ import { EditPanel } from "./EditPanel";
 import { ThemeSetting } from "./theme/ThemeSetting";
 import { TypographySetting } from "./typography/TypographySetting";
 import { SpacingSetting } from "./spacing/SpacingSetting";
-import { ModeSetting } from "./mode/ModeSetting";
-import { HeaderAlignSetting } from "./layout/HeaderAlignSetting";
 import { TemplateThumbnail } from "@/components/preview/TemplateThumbnail";
 import { cn } from "@/lib/utils";
 
@@ -176,7 +174,7 @@ function TemplatePanel() {
   );
 }
 
-// 样式：主题 / 字体 / 间距 / 模式
+// 样式：主题 / 字体 / 间距
 function StylePanel() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
@@ -185,8 +183,6 @@ function StylePanel() {
           <ThemeSetting />
           <TypographySetting />
           <SpacingSetting />
-          <ModeSetting />
-          <HeaderAlignSetting />
         </div>
       </div>
     </div>

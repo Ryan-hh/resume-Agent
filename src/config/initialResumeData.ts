@@ -11,7 +11,6 @@ export const initialGlobalSettings: GlobalSettings = {
   subheaderSize: 16,
   useIconMode: true,
   themeColor: "#000000",
-  centerSubtitle: true,
   pageBreakLinesVisible: true,
 };
 

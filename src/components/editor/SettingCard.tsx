@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "@/i18n/zh";
 
 // 设置卡容器
 export function SettingCard({

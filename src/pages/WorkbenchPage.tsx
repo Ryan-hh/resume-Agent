@@ -1,14 +1,19 @@
 import React from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { PanelLeft, Eye, Bot } from "lucide-react";
+import { lazy, Suspense } from "react";
+import { PanelLeft, Eye, Bot, Loader2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { LeftWorkspace, LeftMode } from "@/components/editor/LeftWorkspace";
 import { PreviewPanel } from "@/components/preview/PreviewPanel";
 import { PreviewDock } from "@/components/preview/PreviewDock";
-import { AIEditorPanel } from "@/components/ai/AIEditorPanel";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+// AI 助手面板按需加载（内含 LangChain，体积较大，避免拖慢工作台首屏）
+const AIEditorPanel = lazy(() =>
+  import("@/components/ai/AIEditorPanel").then((m) => ({ default: m.AIEditorPanel }))
+);
 
 type PanelKey = "left" | "preview" | "ai";
 type PanelSizes = Record<PanelKey, number>; // 百分比，可见面板之和恒为 100
@@ -284,15 +289,15 @@ export default function WorkbenchPage() {
     : { duration: 0.28, ease: [0.32, 0.72, 0, 1] as const };
 
   const dockItems: { key: PanelKey; icon: React.ElementType; label: string; isOpen: boolean }[] = [
-    { key: "left", icon: Eye, label: "预览", isOpen: open.left },
-    { key: "preview", icon: PanelLeft, label: "编辑", isOpen: open.preview },
+    { key: "left", icon: PanelLeft, label: "编辑", isOpen: open.left },
+    { key: "preview", icon: Eye, label: "预览", isOpen: open.preview },
     { key: "ai", icon: Bot, label: "AI 助手", isOpen: open.ai },
   ];
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background p-3">
       <div ref={containerRef} className="relative flex min-h-0 flex-1 overflow-hidden">
-        {/* 左面板：A4 简历预览（与中间表单区交换位置后居左） */}
+        {/* 左面板：编辑表单区（左侧竖排工具栏 + 表单内容） */}
         <AnimatePresence initial={false}>
           {open.left && (
             <motion.div
@@ -305,9 +310,11 @@ export default function WorkbenchPage() {
             >
               {/* p-1 形成面板间的小间距（两个面板各 4px → 视觉缝隙 8px），不占 flex 宽度 */}
               <div className="h-full p-1">
-                <div className="relative h-full overflow-hidden rounded-xl border border-border bg-background">
-                  <PreviewPanel />
+                <div className="flex h-full overflow-hidden rounded-xl border border-border bg-background">
                   <PreviewDock mode={mode} onModeChange={setMode} />
+                  <div className="min-w-0 flex-1">
+                    <LeftWorkspace mode={mode} />
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -317,14 +324,14 @@ export default function WorkbenchPage() {
         {open.left && open.preview && (
           <PanelDivider
             innerRef={leftDividerRef}
-            label="调整左侧预览区宽度"
+            label="调整左侧编辑区宽度"
             onReset={() => resetDivider("left")}
             onNudge={nudgeDivider("left")}
             style={{ left: `${sizes.left}%` }}
           />
         )}
 
-        {/* 中间：编辑表单区 */}
+        {/* 中间：A4 简历预览 */}
         <AnimatePresence initial={false}>
           {open.preview && (
             <motion.div
@@ -337,8 +344,8 @@ export default function WorkbenchPage() {
             >
               {/* p-1 形成面板间的小间距（两个面板各 4px → 视觉缝隙 8px），不占 flex 宽度 */}
               <div className="h-full p-1">
-                <div className="h-full overflow-hidden rounded-xl border border-border bg-background">
-                  <LeftWorkspace mode={mode} />
+                <div className="relative h-full overflow-hidden rounded-xl border border-border bg-background">
+                  <PreviewPanel />
                 </div>
               </div>
             </motion.div>
@@ -369,7 +376,16 @@ export default function WorkbenchPage() {
               {/* p-1 形成面板间的小间距（两个面板各 4px → 视觉缝隙 8px），不占 flex 宽度 */}
               <div className="h-full p-1">
                 <div className="h-full overflow-hidden rounded-xl border border-border bg-background">
-                  <AIEditorPanel resumeId={resume.id} onClose={() => togglePanel("ai")} />
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-xs">正在加载 AI 助手…</span>
+                      </div>
+                    }
+                  >
+                    <AIEditorPanel resumeId={resume.id} onClose={() => togglePanel("ai")} />
+                  </Suspense>
                 </div>
               </div>
             </motion.div>

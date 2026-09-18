@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { StateStorage } from "zustand/middleware";
 import {
   BasicInfo,
+  CustomFieldType,
   Education,
   Experience,
   GlobalSettings,
@@ -604,9 +605,9 @@ export const useResumeStore = create(
         activeResumeId: state.activeResumeId,
         firstRunCreated: state.firstRunCreated,
       }),
-      version: 6,
+      version: 7,
       migrate: (persistedState, version) => {
-        if (version >= 6) return persistedState as PersistedResumeStore;
+        if (version >= 7) return persistedState as PersistedResumeStore;
         // persist 实际结构为 { state: { resumes, activeResumeId }, version }，兼容直接存 resumes 的形态
         const raw = persistedState as unknown as {
           state?: { resumes?: Record<string, ResumeData> };
@@ -705,6 +706,13 @@ export const useResumeStore = create(
                 (r.customData as unknown as Record<string, string>)[key] = "";
               }
             });
+          }
+          // v6 → v7：修复 AI 工具曾把 basic.customFields 存成普通对象的问题（应为数组）
+          if (r.basic && r.basic.customFields !== undefined && !Array.isArray(r.basic.customFields)) {
+            const entries = Object.values(r.basic.customFields as Record<string, unknown>).filter(
+              (v): v is CustomFieldType => !!v && typeof v === "object"
+            );
+            r.basic.customFields = entries;
           }
         });
         return persistedState as PersistedResumeStore;

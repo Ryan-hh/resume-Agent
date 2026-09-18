@@ -1,8 +1,6 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { LayoutTemplate, ArrowLeft, Github, CircleHelp, SlidersHorizontal, FilePen, Undo2, Redo2, FileDown } from "lucide-react";
-import { useTranslations } from "@/i18n/zh";
 import { useResumeStore } from "@/store/useResumeStore";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FAQDialog } from "./FAQDialog";
@@ -10,7 +8,8 @@ import { PdfExport } from "@/components/shared/PdfExport";
 import { LeftMode } from "@/components/editor/LeftWorkspace";
 import { cn } from "@/lib/utils";
 
-// 右侧竖排 Dock：切换左侧操作区模式（内容编辑 / 模板 / 样式）+ 返回 / GitHub / FAQ
+// 竖排工具栏：位于表单板块左侧的真实布局一栏（非悬浮），
+// 切换左侧操作区模式（内容编辑 / 模板 / 样式）+ 撤销重做/导出 + 返回 / GitHub / FAQ
 export function PreviewDock({
   mode,
   onModeChange,
@@ -18,7 +17,6 @@ export function PreviewDock({
   mode: LeftMode;
   onModeChange: (m: LeftMode) => void;
 }) {
-  const t = useTranslations();
   const navigate = useNavigate();
   const undo = useResumeStore((s) => s.undo);
   const redo = useResumeStore((s) => s.redo);
@@ -32,16 +30,11 @@ export function PreviewDock({
   ];
 
   return (
-    <motion.div
-      initial={{ x: 80, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ delay: 0.3, duration: 0.4, ease: "easeOut" }}
-      className="absolute right-4 top-1/2 z-20 -translate-y-1/2"
-    >
-      <div className="flex flex-col items-center gap-1 rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md">
-        {/* 左侧操作区模式切换 */}
+    <div className="flex h-full shrink-0 flex-col items-center gap-1 border-r border-border bg-muted/30 p-1.5">
+      {/* 左侧操作区模式切换 */}
+      <div className="flex flex-col items-center gap-1">
         {modeButtons.map((btn) => (
-          <Tooltip key={btn.key} content={btn.tooltip} side="left">
+          <Tooltip key={btn.key} content={btn.tooltip} side="right">
             <button
               onClick={() => onModeChange(btn.key)}
               className={cn(
@@ -55,10 +48,12 @@ export function PreviewDock({
             </button>
           </Tooltip>
         ))}
+      </div>
 
-        <div className="my-0.5 h-px w-6 bg-border" />
+      <div className="my-1 h-px w-6 bg-border" />
 
-        {/* 撤销 / 重做 / 导出 */}
+      {/* 撤销 / 重做 / 导出 */}
+      <div className="flex flex-col items-center gap-1">
         <DockButton tooltip="撤销 (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
           <Undo2 className="h-4 w-4" />
         </DockButton>
@@ -67,22 +62,24 @@ export function PreviewDock({
         </DockButton>
         <PdfExport
           trigger={
-            <DockButton tooltip={t("previewDock.export.tooltip")}>
+            <DockButton tooltip="导出">
               <FileDown className="h-4 w-4" />
             </DockButton>
           }
         />
+      </div>
 
-        <div className="my-0.5 h-px w-6 bg-border" />
+      <div className="my-1 h-px w-6 bg-border" />
 
-        {/* 返回仪表盘 */}
-        <DockButton tooltip={t("previewDock.backToDashboard")} onClick={() => navigate("/")}>
+      {/* 返回仪表盘（贴底） */}
+      <div className="mt-auto flex flex-col items-center gap-1">
+        <DockButton tooltip="返回仪表盘" onClick={() => navigate("/")}>
           <ArrowLeft className="h-4 w-4" />
         </DockButton>
 
         {/* GitHub */}
         <DockButton
-          tooltip={t("previewDock.github")}
+          tooltip="项目源码"
           onClick={() => window.open("https://github.com", "_blank")}
         >
           <Github className="h-4 w-4" />
@@ -91,13 +88,13 @@ export function PreviewDock({
         {/* FAQ */}
         <FAQDialog
           trigger={
-            <DockButton tooltip={t("previewDock.faq")}>
+            <DockButton tooltip="帮助">
               <CircleHelp className="h-4 w-4" />
             </DockButton>
           }
         />
       </div>
-    </motion.div>
+    </div>
   );
 }
 

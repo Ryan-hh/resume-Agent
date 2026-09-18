@@ -11,6 +11,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // @anthropic-ai/sdk 的 exports 通配未覆盖无扩展名子路径，Rollup 解析不到；
+      // 直接指向实际 CJS 文件（@langchain/anthropic 仅用到 transformJSONSchema）
+      '@anthropic-ai/sdk/lib/transform-json-schema': path.resolve(
+        __dirname,
+        './node_modules/@anthropic-ai/sdk/lib/transform-json-schema.js'
+      ),
     },
   },
   optimizeDeps: {

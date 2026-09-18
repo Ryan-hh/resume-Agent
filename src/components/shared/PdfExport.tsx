@@ -10,7 +10,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
-import { useTranslations } from "@/i18n/zh";
 import {
   exportToPdf,
   exportToLongPagePdf,
@@ -25,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
-  const t = useTranslations();
   const activeResume = useResumeStore((s) => s.activeResume);
   const [open, setOpen] = React.useState(false);
   const [pendingAction, setPendingAction] = React.useState<string | null>(null);
@@ -53,15 +51,15 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
             ...baseOptions,
             onStart: undefined,
             onEnd: undefined,
-            successMessage: t("pdfExport.toast.success"),
-            errorMessage: t("pdfExport.toast.error"),
+            successMessage: "PDF 导出成功",
+            errorMessage: "PDF 导出失败",
           });
           break;
         case "image":
           await exportToLongPageImage({
             ...baseOptions,
-            successMessage: t("pdfExport.toast.imageSuccess"),
-            errorMessage: t("pdfExport.toast.imageError"),
+            successMessage: "图片导出成功",
+            errorMessage: "图片导出失败",
           });
           break;
         case "print":
@@ -90,8 +88,8 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
     exportResumeAsJson({
       resume: activeResume,
       title: activeResume.title,
-      successMessage: t("pdfExport.toast.jsonSuccess"),
-      errorMessage: t("pdfExport.toast.jsonError"),
+      successMessage: "JSON 导出成功",
+      errorMessage: "JSON 导出失败",
     });
     setOpen(false);
   };
@@ -101,8 +99,8 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
     exportResumeAsMarkdown({
       resume: activeResume,
       title: activeResume.title,
-      successMessage: t("pdfExport.toast.markdownSuccess"),
-      errorMessage: t("pdfExport.toast.markdownError"),
+      successMessage: "Markdown 导出成功",
+      errorMessage: "Markdown 导出失败",
     });
     setOpen(false);
   };
@@ -112,37 +110,37 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
       id: "pdf" as const,
       icon: FileText,
       title: "PDF",
-      desc: t("pdfExport.modal.pdfDesc"),
+      desc: "按 A4 纸张分页导出为 PDF 文件，适合投递与打印。",
     },
     {
       id: "longPdf" as const,
       icon: StretchHorizontal,
       title: "长页 PDF",
-      desc: t("pdfExport.modal.longPagePdfDesc"),
+      desc: "导出为单页长图式 PDF，适合在屏幕上完整浏览。",
     },
     {
       id: "image" as const,
       icon: ImageIcon,
       title: "长页图片",
-      desc: t("pdfExport.modal.longPageImageDesc"),
+      desc: "导出为一张完整的长图片（PNG）。",
     },
     {
       id: "print" as const,
       icon: Printer,
       title: "打印",
-      desc: t("pdfExport.modal.printDesc"),
+      desc: "调起浏览器打印对话框，可选择保存为 PDF 或直接打印。",
     },
     {
       id: "json" as const,
       icon: Braces,
       title: "JSON",
-      desc: t("pdfExport.modal.jsonDesc"),
+      desc: "导出为 JSON 数据文件，可在其他设备导入继续编辑。",
     },
     {
       id: "markdown" as const,
       icon: FileDown,
       title: "Markdown",
-      desc: t("pdfExport.modal.markdownDesc"),
+      desc: "导出为 Markdown 文本，便于二次编辑与发布。",
     },
   ];
 
@@ -151,7 +149,7 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
       {trigger ? (
         <span onClick={() => setOpen(true)}>{trigger}</span>
       ) : (
-        <Tooltip content={t("previewDock.export.tooltip")}>
+        <Tooltip content="导出">
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="导出">
             <FileDown className="h-4 w-4" />
           </Button>
@@ -160,8 +158,8 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t("pdfExport.modal.title")}</DialogTitle>
-            <DialogDescription>{t("pdfExport.modal.subtitle")}</DialogDescription>
+            <DialogTitle>导出简历</DialogTitle>
+            <DialogDescription>选择你需要的导出格式</DialogDescription>
           </DialogHeader>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {exportOptions.map((opt) => (
@@ -192,7 +190,7 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
           </div>
           <div className="mt-4 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-            {t("pdfExport.modal.privacyNotice")}
+            所有导出均在本地完成，你的数据不会离开浏览器。
           </div>
         </DialogContent>
       </Dialog>
