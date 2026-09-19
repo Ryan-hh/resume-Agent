@@ -37,13 +37,18 @@ export function RichTextarea({
   onChange,
   placeholder,
   rows = 8,
+  contextLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   rows?: number;
+  /** 当前内容所属板块/条目名（如「工作经历」），供 AI 润色定位上下文 */
+  contextLabel?: string;
 }) {
-  return <RichEditor value={value} onChange={onChange} placeholder={placeholder} minRows={rows} />;
+  return (
+    <RichEditor value={value} onChange={onChange} placeholder={placeholder} minRows={rows} contextLabel={contextLabel} />
+  );
 }
 
 export { RichEditor };

@@ -68,8 +68,12 @@ export function PagedResume({
       }
     });
 
-    // 测量未缩放的真实高度（transform 不影响布局尺寸），用于宿主占位
-    const h = target.getBoundingClientRect().height || PREVIEW_HEIGHT_PX;
+    // 测量未缩放的真实布局高度，用于宿主占位。
+    // 不能用 getBoundingClientRect()：页面通过 transform: scale() 缩放，其返回的是
+    // 受 transform 影响的视觉高度（scale<1 时被压缩），会导致宿主高度二次缩小、
+    // overflow:hidden 裁掉页面底部（首次加载 scale 尚为 1 时正常，AI/编辑触发
+    // 分页重建时 scale 已生效，预览随即截断）。offsetHeight 是布局高度，不受 transform 影响。
+    const h = target.offsetHeight || PREVIEW_HEIGHT_PX;
     setHostH(h);
   }, [resume, templateId]);
 

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense } from "react";
 import { PanelLeft, Eye, Bot, Loader2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
+import { useAIAgentStore } from "@/store/useAIAgentStore";
 import { LeftWorkspace, LeftMode } from "@/components/editor/LeftWorkspace";
 import { PreviewPanel } from "@/components/preview/PreviewPanel";
 import { PreviewDock } from "@/components/preview/PreviewDock";
@@ -131,6 +132,15 @@ export default function WorkbenchPage() {
   }, []);
 
   const resume = id ? resumes[id] : undefined;
+
+  // 外部请求打开 AI 面板（如编辑器里点「AI 润色」）：确保面板可见后消费请求
+  const aiPanelRequested = useAIAgentStore((s) => s.aiPanelRequested);
+  React.useEffect(() => {
+    if (aiPanelRequested && !open.ai) {
+      togglePanel("ai");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiPanelRequested]);
 
   React.useEffect(() => {
     if (id && resumes[id]) {

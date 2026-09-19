@@ -22,6 +22,7 @@ export function CustomPanel({ sectionId }: { sectionId: string }) {
         value={content}
         onChange={(v) => updateCustomContent(sectionId, v)}
         rows={12}
+        contextLabel="自定义板块"
       />
     </div>
   );

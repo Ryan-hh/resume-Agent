@@ -50,6 +50,18 @@ export const TEMPLATES: ResumeTemplate[] = [
     basic: { layout: "left" },
     availableSections: ["education", "skills", "experience", "internship", "projects", "certificates", "selfEvaluation"],
   },
+  {
+    id: "bluechip",
+    name: "蓝点风格",
+    description: "顶部彩条 + 居中头部，板块图标化标题，清爽现代的互联网风。",
+    thumbnail: "bluechip",
+    layout: "bluechip",
+    category: "single",
+    colorScheme: { primary: "#1FA2E6", secondary: "#4b5563", background: "#ffffff", text: "#212529" },
+    spacing: { sectionGap: 24, itemGap: 14, contentPadding: 40 },
+    basic: { layout: "center" },
+    availableSections: ["education", "skills", "experience", "internship", "projects", "certificates", "selfEvaluation"],
+  },
 ];
 
 export const DEFAULT_TEMPLATES: ResumeTemplate[] = TEMPLATES;

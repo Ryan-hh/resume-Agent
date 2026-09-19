@@ -28,7 +28,7 @@ export function createStructureTools(resumeId: string) {
       {
         name: "toggle_section_visibility",
         description:
-          "切换简历板块的显示/隐藏（标准板块和自定义板块都支持）。section 传板块 id，如 experience、projects、skills、custom-xxx 等。隐藏不等于删除，随时可以再显示。",
+          "切换板块显示/隐藏（标准与自定义板块均可）。section 传板块 id（如 experience、projects、skills、custom-xxx）。隐藏不等于删除，可随时再显示。",
         schema: z.object({
           section: z.string().describe("板块 id（menuSections 中的 id）"),
         }),
@@ -62,8 +62,7 @@ export function createStructureTools(resumeId: string) {
       },
       {
         name: "create_custom_section",
-        description:
-          "新建一个自定义板块（如「获奖经历」「专利」等）。title 为板块标题；icon 可选（建议用默认 FileText）；content 可选，为该板块的初始内容。",
+        description: "新建自定义板块（如「获奖经历」「专利」）。title 板块标题；icon 可选；content 可选初始内容。",
         schema: z.object({
           title: z.string().describe("板块标题，如「获奖经历」"),
           icon: z.string().optional().describe("板块图标（可选）"),
@@ -93,7 +92,7 @@ export function createStructureTools(resumeId: string) {
       {
         name: "remove_custom_section",
         description:
-          "删除一个自定义板块（id 以 custom- 开头）及其全部内容。标准板块（education、experience 等）不可删除，只能隐藏。删除不可直接恢复，请确认。",
+          "删除自定义板块（id 以 custom- 开头）及其全部内容。标准板块（education、experience 等）不可删除，只能隐藏。删除不可恢复，请确认。",
         schema: z.object({
           section: z.string().describe("要删除的自定义板块 id，如 custom-xxx"),
         }),
@@ -123,8 +122,7 @@ export function createStructureTools(resumeId: string) {
       },
       {
         name: "reorder_sections",
-        description:
-          "调整简历板块的展示顺序。order 传板块 id 的新顺序数组（必须包含全部板块 id，只调换顺序）。",
+        description: "调整板块展示顺序。order 传包含全部板块 id 的新顺序数组（只调换顺序）。",
         schema: z.object({
           order: z.array(z.string()).describe("板块 id 的新顺序"),
         }),

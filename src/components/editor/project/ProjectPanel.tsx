@@ -171,6 +171,7 @@ function ProjectItem({
                 <RichTextarea
                   value={item.description}
                   onChange={(v) => onChange({ ...item, description: v })}
+                contextLabel="项目经历"
                 />
               </Field>
             </div>

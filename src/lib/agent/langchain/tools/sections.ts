@@ -91,12 +91,12 @@ export function createSectionTools(resumeId: string) {
       {
         name: "upsert_section",
         description:
-          "在经历类板块中新增或更新一个条目。section 取值：education（教育背景）、experience（工作经历）、internship（实习经历）、projects（项目经历）。" +
-          "若存在相同标识的条目则覆盖更新：education 用 school+major 匹配，experience/internship 用 company+position 匹配，projects 用 name 匹配；否则新增。" +
-          "时间字段用 YYYY-MM 格式；「至今」用 isPresent: true。details/description 可传字符串数组或换行分隔的字符串。" +
-          "education 条目字段：school、major、degree、startDate、endDate、description（在校经历）；" +
-          "experience/internship 条目字段：company、position、startDate、endDate、isPresent、details（工作/实习内容列表）；" +
-          "projects 条目字段：name、role、startDate、endDate、isPresent、description（项目内容列表）。",
+          "新增或更新经历类板块条目。section：education（教育背景）、experience（工作经历）、internship（实习经历）、projects（项目经历）。" +
+          "存在相同标识则覆盖更新：education 按 school+major 匹配，experience/internship 按 company+position 匹配，projects 按 name 匹配；否则新增。" +
+          "时间用 YYYY-MM；「至今」用 isPresent: true。details/description 可传字符串数组或换行文本。" +
+          "education 字段：school、major、degree、startDate、endDate、description；" +
+          "experience/internship 字段：company、position、startDate、endDate、isPresent、details；" +
+          "projects 字段：name、role、startDate、endDate、isPresent、description。",
         schema: z.object({
           section: z.enum(SECTION_KEYS),
           item: z.record(z.string(), z.unknown()).describe("条目内容，字段见描述"),
@@ -151,7 +151,7 @@ export function createSectionTools(resumeId: string) {
       {
         name: "replace_field",
         description:
-          "修改指定板块中某个条目的字段值。index 从 0 开始。startDate/endDate 用 YYYY-MM 格式（会自动归一化）；isPresent 传布尔值表示是否至今；details/description 传字符串数组或换行文本整体替换。",
+          "修改板块中某条目的字段值。index 从 0 开始。startDate/endDate 自动归一化为 YYYY-MM；isPresent 传布尔（是否至今）；details/description 传字符串数组或换行文本整体替换。",
         schema: z.object({
           section: z.enum(SECTION_KEYS),
           index: z.number().int().min(0).describe("条目索引，从 0 开始"),
@@ -184,8 +184,7 @@ export function createSectionTools(resumeId: string) {
       },
       {
         name: "remove_section_item",
-        description:
-          "删除指定板块中的某个条目。index 从 0 开始。删除会立即写入简历且不可直接恢复（用户可撤销），请确认索引准确。",
+        description: "删除板块中的条目。index 从 0 开始。删除立即生效、用户可撤销，请先确认索引准确。",
         schema: z.object({
           section: z.enum(SECTION_KEYS),
           index: z.number().int().min(0).describe("条目索引，从 0 开始"),
@@ -209,7 +208,7 @@ export function createSectionTools(resumeId: string) {
       {
         name: "update_text_content",
         description:
-          "更新文本类板块内容：skills（专业技能，每条技能用换行或顿号分隔）、selfEvaluation（自我评价，可带简单 HTML）、certificates（荣誉证书，可带简单 HTML）。",
+          "更新文本板块内容：skills（专业技能，技能用换行或顿号分隔）、selfEvaluation（自我评价，可带简单 HTML）、certificates（荣誉证书，可带简单 HTML）。",
         schema: z.object({
           section: z.enum(TEXT_KEYS),
           content: z.string().describe("新的文本内容"),

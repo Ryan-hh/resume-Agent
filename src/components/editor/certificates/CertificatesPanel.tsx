@@ -12,6 +12,7 @@ export function CertificatesPanel() {
         value={content}
         onChange={updateCertificatesContent}
         rows={10}
+        contextLabel="证书与荣誉"
       />
     </div>
   );

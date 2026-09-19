@@ -12,6 +12,7 @@ export function SelfEvaluationPanel() {
         value={content}
         onChange={updateSelfEvaluationContent}
         rows={12}
+        contextLabel="自我评价"
       />
     </div>
   );

@@ -172,6 +172,7 @@ function InternshipItem({
                   value={item.details}
                   onChange={(v) => onChange({ ...item, details: v })}
                   placeholder="描述主要职责与成果，建议用要点列出（工具栏支持加粗、列表等）"
+                contextLabel="实习经历"
                 />
               </Field>
             </div>

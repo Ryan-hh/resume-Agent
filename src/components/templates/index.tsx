@@ -5,6 +5,7 @@ import TimelineTemplate from "./timeline";
 import MinimalistTemplate from "./minimalist";
 import ElegantTemplate from "./elegant";
 import SwissTemplate from "./swiss";
+import BlueChipTemplate from "./bluechip";
 
 // 模板注册表：layout id -> 组件（仅保留单列模板）
 const TEMPLATE_REGISTRY: Record<string, React.ComponentType<{ resume: ResumeData }>> = {
@@ -13,6 +14,7 @@ const TEMPLATE_REGISTRY: Record<string, React.ComponentType<{ resume: ResumeData
   minimalist: MinimalistTemplate,
   elegant: ElegantTemplate,
   swiss: SwissTemplate,
+  bluechip: BlueChipTemplate,
 };
 
 export function ResumeTemplateComponent({

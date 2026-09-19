@@ -86,6 +86,7 @@ export type SectionTitleVariant =
   | "bold" // 超大粗体
   | "elegant" // 居中 + 两侧装饰线
   | "icon" // 图标 + 竖线
+  | "chip" // 蓝色实心圆图标 + 彩色标题 + 右侧延伸细线
   | "editorial"; // 编号 + 粗体
 
 export function SectionTitle({
@@ -142,6 +143,28 @@ export function SectionTitle({
           {renderIcon(icon, headerSize, themeColor)}
           <h3 style={{ ...common }}>{title}</h3>
           <div style={{ flex: 1, height: "1px", background: themeColor, opacity: 0.25 }} />
+        </div>
+      );
+    case "chip":
+      // 蓝点风格：实心圆底白图标 + 彩色加粗标题 + 标题右侧延伸同色细线
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+          <span
+            style={{
+              width: `${Math.round(headerSize + 8)}px`,
+              height: `${Math.round(headerSize + 8)}px`,
+              borderRadius: "50%",
+              background: themeColor,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            {renderIcon(icon, Math.round((headerSize + 8) * 0.55), "#ffffff")}
+          </span>
+          <h3 style={{ ...common, color: themeColor, whiteSpace: "nowrap" }}>{title}</h3>
+          <div style={{ flex: 1, height: "2px", background: themeColor, opacity: 0.3 }} />
         </div>
       );
     case "editorial":

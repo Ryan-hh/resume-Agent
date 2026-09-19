@@ -13,6 +13,7 @@ export function SkillsPanel() {
         onChange={updateSkillContent}
         placeholder="在这里填写你的技能清单"
         rows={16}
+        contextLabel="技能"
       />
     </div>
   );

@@ -201,6 +201,7 @@ function EducationItem({
                   value={item.description || ""}
                   onChange={(v) => onChange({ ...item, description: v })}
                   placeholder="奖学金、竞赛、学生工作等亮点（工具栏支持加粗、列表）"
+                contextLabel="教育经历（在校经历）"
                 />
               </Field>
             </div>

@@ -248,4 +248,24 @@ a[aria-disabled="true"] {
   pointer-events: none;
 }
 
+/* ask_user 确认卡内的富文本预览：列表/加粗/段落与简历实际渲染一致 */
+.ask-confirm-preview ul,
+.ask-confirm-preview ol {
+  padding-left: 1.4em;
+  margin: 4px 0;
+}
+.ask-confirm-preview ul {
+  list-style: disc;
+}
+.ask-confirm-preview ol {
+  list-style: decimal;
+}
+.ask-confirm-preview p {
+  margin: 4px 0;
+}
+.ask-confirm-preview b,
+.ask-confirm-preview strong {
+  font-weight: 600;
+}
+
 /* （已取消：模板 section 悬停高亮与点击跳转编辑，改为纯展示） */

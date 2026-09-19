@@ -11,15 +11,10 @@ import {
   IndentIncrease,
   IndentDecrease,
   Sparkles,
-  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { toAIConnection } from "@/config/ai-models";
-import { useAIConfigStore } from "@/store/useAIConfigStore";
-import { createChatModel } from "@/lib/agent/langchain/modelFactory";
-import { describeAIError } from "@/lib/agent/langchain/errors";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { useAIAgentStore } from "@/store/useAIAgentStore";
 
 const MAX_INDENT = 6;
 const INDENT_STEP_PX = 24;
@@ -129,11 +124,14 @@ export function RichEditor({
   onChange,
   placeholder,
   minRows = 4,
+  contextLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   minRows?: number;
+  /** 当前内容所属板块/条目名（如「工作经历」），供 AI 润色定位上下文 */
+  contextLabel?: string;
 }) {
   const editor = useEditor({
     extensions: [
@@ -176,41 +174,29 @@ export function RichEditor({
     },
   });
 
-  // AI 润色：取当前框内内容 → 用已配置的润色模型优化 → 自动填回
-  const models = useAIConfigStore((s) => s.models);
-  const textModelId = useAIConfigStore((s) => s.textModelId);
-  const [polishing, setPolishing] = React.useState(false);
+  // AI 润色：交给右侧 AI 助手完成——把当前内容作为消息自动发送，
+  // Agent 润色后会通过 ask_user 询问是否应用，确认后才写入
+  const requestPolish = useAIAgentStore((s) => s.requestPolish);
+
+  // 外部 value 同步：tiptap 的 content 只在创建时生效，AI/外部修改 store 后
+  // value 变化但编辑器内容不变（预览已更新、表单不更新）。
+  // 仅在两者确实不同步时替换（用户输入时 onChange 已即时写回，value===getHTML，不会重置光标）
+  React.useEffect(() => {
+    if (!editor) return;
+    if (value === editor.getHTML()) return;
+    editor.commands.setContent(value || "", { emitUpdate: false });
+  }, [value, editor]);
 
   if (!editor) return null;
 
-  const runPolish = async () => {
+  const runPolish = () => {
     const text = editor.getText();
     if (!text.trim()) {
       toast.error("当前内容为空，暂无可润色的内容");
       return;
     }
-    const profile = models.find((m) => m.id === textModelId);
-    if (!profile || !profile.apiKey.trim() || !profile.model.trim()) {
-      toast.error("尚未配置润色模型，请先到 AI 配置页填写 API Key 并勾选供应商");
-      return;
-    }
-    setPolishing(true);
-    try {
-      const model = createChatModel(toAIConnection(profile));
-      const result = await model.invoke([
-        new SystemMessage(
-          "你是一位专业的简历润色助手。用户会给你一段简历模块的内容，请在不改变事实与结构的前提下优化表达，使语言更精炼、专业、有力；保留原有的分段、列表与要点；直接输出润色后的内容，不要任何解释或前后缀。"
-        ),
-        new HumanMessage(text),
-      ]);
-      const content = typeof result.content === "string" ? result.content : String(result.content);
-      editor.commands.setContent(content, { emitUpdate: true });
-      toast.success("润色完成，已更新内容");
-    } catch (error) {
-      toast.error(describeAIError(error));
-    } finally {
-      setPolishing(false);
-    }
+    requestPolish(contextLabel, text);
+    toast.success("已交给 AI 助手润色，完成后会询问你是否应用");
   };
 
   return (
@@ -252,25 +238,15 @@ export function RichEditor({
         >
           <IndentDecrease className="h-3.5 w-3.5" />
         </ToolButton>
-        {/* AI 润色：工具栏右侧 */}
+        {/* AI 润色：工具栏右侧，交给 AI 助手处理 */}
         <button
           type="button"
           onClick={runPolish}
-          disabled={polishing}
-          title="使用已配置的 AI 模型润色当前内容"
-          className={cn(
-            "ml-auto inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-primary transition-colors",
-            polishing
-              ? "cursor-wait opacity-70"
-              : "hover:bg-primary/10"
-          )}
+          title="将当前内容交给 AI 助手润色，确认后应用"
+          className="ml-auto inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
         >
-          {polishing ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Sparkles className="h-3.5 w-3.5" />
-          )}
-          {polishing ? "润色中…" : "AI 润色"}
+          <Sparkles className="h-3.5 w-3.5" />
+          AI 润色
         </button>
       </div>
       {/* 内容区 */}

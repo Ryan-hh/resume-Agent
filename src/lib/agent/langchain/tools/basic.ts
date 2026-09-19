@@ -25,7 +25,7 @@ export function createBasicTools(resumeId: string) {
       {
         name: "update_basic",
         description:
-          "更新基本信息中的自由文本字段。可用字段：name（姓名）、title（求职意向/头衔）、email（邮箱）、phone（电话）、location（城市）、politicalStatus（政治面貌）、jobIntention（求职意向，与 title 不同时使用）。清除某字段时 value 传空字符串。",
+          "更新基本信息自由文本字段。可用：name、title、email、phone、location、politicalStatus、jobIntention。清空某字段时 value 传空字符串。",
         schema: z.object({
           field: z
             .enum(BASIC_FIELDS)
@@ -54,7 +54,7 @@ export function createBasicTools(resumeId: string) {
       {
         name: "update_birth_date",
         description:
-          "更新出生日期。支持多种写法（如 1998年5月、1998-5、1998.05），会自动归一化为 YYYY-MM 格式；无法识别时返回错误。showAge 可选：true 表示在简历上展示年龄，false 表示不展示。",
+          "更新出生日期。支持多种写法（1998年5月、1998-5、1998.05），自动归一化为 YYYY-MM；无法识别则报错。showAge 可选：true 展示年龄、false 不展示。",
         schema: z.object({
           value: z.string().describe("出生日期，如 1998年5月 或 1998-05"),
           showAge: z.boolean().optional().describe("是否展示年龄（可选）"),
@@ -77,8 +77,7 @@ export function createBasicTools(resumeId: string) {
       },
       {
         name: "update_gender",
-        description:
-          "更新性别（胶囊单选，取值受限）。只能传：空字符串（不填）、男、女，其他值一律拒绝。",
+        description: "更新性别（受限取值）。只能传：空字符串（不填）、男、女，其他值拒绝。",
         schema: z.object({
           value: z.enum(GENDER_VALUES).describe("性别：空字符串表示不填，男 或 女"),
         }),
@@ -121,7 +120,7 @@ export function createBasicTools(resumeId: string) {
       {
         name: "update_custom_field",
         description:
-          "更新基本信息中的自定义字段（带图标的小字段，如个人网站、GitHub、语言等）。用 index（从 0 开始）或 label（现有标签）定位；至少提供 value / icon / visible / displayLabel 中一个修改项。icon 可选值：Globe、Github、MapPin、Phone、Mail、Heart、Languages、Link、Star、BookOpen。",
+          "更新基本信息中的自定义字段（带图标的小字段，如个人网站、GitHub、语言）。用 index（从 0 开始）或 label（现有标签）定位；至少提供 value/icon/visible/displayLabel 之一。icon 可选：Globe、Github、MapPin、Phone、Mail、Heart、Languages、Link、Star、BookOpen。",
         schema: z.object({
           index: z.number().int().min(0).optional().describe("字段索引，从 0 开始；与 label 二选一"),
           label: z.string().optional().describe("现有字段的标签，如「GitHub」；与 index 二选一"),
@@ -148,7 +147,7 @@ export function createBasicTools(resumeId: string) {
       {
         name: "set_photo",
         description:
-          "设置简历头像。photo 参数必须是完整的图片 data URL（data:image/... 的 base64 字符串），大小不超过 3MB。用于用户上传一寸照片替换头像的场景。",
+          "设置简历头像。photo 必须是 data:image/ 开头的 base64 图片数据 URL，不超过 3MB。只在用户明确要求「设置/更换/使用…作为头像」时才调用；photo 直接使用用户上传并在对话消息中以 image_url 出现的那张图片的 data URL 原样传入，不要截断、不要重新生成。用户上传图片但没有要求设置头像时（例如要求按图片提取信息、填充简历，或只发图片无指令），不要调用本工具。",
         schema: z.object({
           photo: z.string().describe("图片 data URL，如 data:image/jpeg;base64,...."),
         }),
