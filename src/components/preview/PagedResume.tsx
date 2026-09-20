@@ -1,5 +1,4 @@
 import React from "react";
-import { toast } from "sonner";
 import { ResumeTemplateComponent } from "@/components/templates";
 import { ResumeData } from "@/types/resume";
 import { PREVIEW_WIDTH_PX, PREVIEW_HEIGHT_PX } from "./PreviewPanel";
@@ -56,16 +55,10 @@ export function PagedResume({
         `min-height:${PREVIEW_HEIGHT_PX}px`,
         "background:#ffffff",
         "border-radius:2px",
-        "box-shadow:0 2px 24px rgba(0,0,0,0.12)",
         "flex-shrink:0",
       ].join(";");
       pageEl.appendChild(clone);
       target.appendChild(pageEl);
-
-      // 页与页之间：智能一页入口（只有多页才出现，功能暂未开放）
-      if (i < pages.length - 1) {
-        target.appendChild(makeSmartOnePageButton());
-      }
     });
 
     // 测量未缩放的真实布局高度，用于宿主占位。
@@ -112,24 +105,4 @@ export function PagedResume({
       </div>
     </>
   );
-}
-
-// 「智能一页」入口按钮：与界面风格统一的小胶囊，功能暂未开放
-function makeSmartOnePageButton(): HTMLElement {
-  const wrap = document.createElement("div");
-  // 容器宽度固定为页面宽度（PREVIEW_WIDTH_PX），与页面一起被 scale 等比缩放：
-  // 若用 w-full 会跟随外层 target 的布局宽度（被 scale 后窄于页面），按钮会偏左不居中
-  wrap.style.cssText = `display:flex;width:${PREVIEW_WIDTH_PX}px;flex-shrink:0;justify-content:center;`;
-
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className =
-    "my-2.5 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background/95 px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-accent hover:text-foreground";
-  btn.textContent = "智能一页";
-  btn.onclick = () => {
-    toast.info("智能一页功能开发中，敬请期待");
-  };
-
-  wrap.appendChild(btn);
-  return wrap;
 }

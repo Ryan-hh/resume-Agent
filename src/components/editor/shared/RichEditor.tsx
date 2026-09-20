@@ -200,7 +200,7 @@ export function RichEditor({
   };
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-background transition-colors focus-within:border-primary/50">
+    <div className="overflow-hidden rounded-none border border-border bg-background transition-colors focus-within:border-primary/50">
       {/* 工具栏 */}
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 px-1.5 py-1">
         <ToolButton
@@ -243,7 +243,7 @@ export function RichEditor({
           type="button"
           onClick={runPolish}
           title="将当前内容交给智能小昊润色，确认后应用"
-          className="ml-auto inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
+          className="ml-auto inline-flex h-6 items-center gap-1 rounded-none px-2 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
         >
           <Sparkles className="h-3.5 w-3.5" />
           AI 润色
@@ -267,7 +267,7 @@ function ToolButton({
   children: React.ReactNode;
 }) {
   const cls = cn(
-    "flex h-6 min-w-6 items-center justify-center rounded-md px-1 text-muted-foreground transition-colors",
+    "flex h-6 min-w-6 items-center justify-center rounded-none px-1 text-muted-foreground transition-colors",
     active ? "bg-primary/10 text-primary" : "hover:bg-accent hover:text-foreground"
   );
   return (

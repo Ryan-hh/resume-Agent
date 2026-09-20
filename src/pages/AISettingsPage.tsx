@@ -44,6 +44,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { ProviderLogo } from "@/components/ai/ProviderLogo";
+import { LightSwitch } from "@/components/shared/LightSwitch";
 import { cn } from "@/lib/utils";
 
 type TestState =
@@ -160,9 +161,21 @@ export default function AISettingsPage() {
     setTestState({ status: "idle" });
   }, [selectedProfile]);
 
-  // ---- 自动保存（防抖）：任何表单字段变化都会在停顿后写入 store ----
+  // ---- 自动保存：名字实时保存，其他字段防抖 ----
   const profileRef = React.useRef(selectedProfile);
   profileRef.current = selectedProfile;
+
+  // 名字实时保存，左侧立马同步
+  React.useEffect(() => {
+    const p = profileRef.current;
+    if (!p || p.provider !== "custom") return;
+    saveModel({
+      ...p,
+      name: nameInput.trim() || p.name,
+    });
+  }, [nameInput, saveModel]);
+
+  // 其他字段 600ms 防抖
   React.useEffect(() => {
     const p = profileRef.current;
     if (!p) return;
@@ -178,7 +191,7 @@ export default function AISettingsPage() {
       });
     }, 600);
     return () => clearTimeout(timer);
-  }, [nameInput, websiteInput, keyInput, modelInput, baseUrlInput, protocolInput]);
+  }, [websiteInput, keyInput, modelInput, baseUrlInput, protocolInput, saveModel]);
 
   const customProfiles = models.filter((m) => m.provider === "custom");
   // 右上角统计：预设供应商 + 已配置完整的自定义供应商都算
@@ -262,7 +275,7 @@ export default function AISettingsPage() {
     toast.success("当前润色模型已切换");
   };
 
-  // 单选圆钮：当前使用 = 实心高亮；可配置 = 空心可点；未配置 = 置灰不可点
+  // 单选圆钮：当前使用 = 实心高亮；已配置 = 绿色边框可点；未配置 = 置灰不可点
   const RadioDot = ({ profile }: { profile: AIModelProfile }) => {
     const current = textModelId === profile.id;
     const configured = isModelConfigured(profile);
@@ -278,12 +291,12 @@ export default function AISettingsPage() {
               : "尚未配置完整，无法设为当前"
         }
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all",
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-none border-[1.5px] transition-all",
           current
             ? "border-primary bg-primary"
             : configured
-              ? "border-border hover:border-primary"
-              : "cursor-not-allowed border-border/50"
+              ? "border-emerald-500 hover:border-emerald-600"
+              : "cursor-not-allowed border-foreground/40"
         )}
       >
         {current && <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3.5} />}
@@ -294,7 +307,7 @@ export default function AISettingsPage() {
   const StatusDot = ({ profile }: { profile: AIModelProfile }) => (
     <span
       className={cn(
-        "h-1.5 w-1.5 shrink-0 rounded-full",
+        "h-1.5 w-1.5 shrink-0 rounded-none",
         isModelConfigured(profile) ? "bg-emerald-500" : "bg-muted-foreground/25"
       )}
       title={isModelConfigured(profile) ? "已配置" : "未配置"}
@@ -303,6 +316,8 @@ export default function AISettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
+      <LightSwitch />
+
       {/* 页头 */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -311,18 +326,17 @@ export default function AISettingsPage() {
         className="mb-6 flex flex-wrap items-end justify-between gap-4"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <Sparkles className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">
             AI 配置
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             填写即自动保存；保存后在左侧勾选即可用于简历内容智能润色
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-none border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
           <span
             className={cn(
-              "h-1.5 w-1.5 rounded-full",
+              "h-1.5 w-1.5 rounded-none",
               configuredCount > 0 ? "bg-emerald-500" : "bg-muted-foreground/30"
             )}
           />
@@ -350,11 +364,11 @@ export default function AISettingsPage() {
                   <div
                     key={item}
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-2 py-2 transition-colors",
+                      "flex items-center gap-2 rounded-none px-2 py-2 transition-colors",
                       active ? "bg-primary/10" : "hover:bg-accent/60"
                     )}
                   >
-                    <RadioDot profile={itemProfile} />
+                    <StatusDot profile={itemProfile} />
                     <button
                       type="button"
                       onClick={() => setSelectedId(`provider:${item}`)}
@@ -370,7 +384,23 @@ export default function AISettingsPage() {
                         {AI_PROVIDER_DEFINITIONS[item].name}
                       </span>
                     </button>
-                    <StatusDot profile={itemProfile} />
+                    {isModelConfigured(itemProfile) && (
+                      <button
+                        type="button"
+                        onClick={() => assignModel(textModelId === itemProfile.id ? null : itemProfile.id)}
+                        title={textModelId === itemProfile.id ? "点击取消选择" : "设为当前模型"}
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded-none border-[2.5px] transition-all",
+                          textModelId === itemProfile.id
+                            ? "border-foreground bg-foreground"
+                            : "border-foreground/40 hover:border-foreground"
+                        )}
+                      >
+                        {textModelId === itemProfile.id && (
+                          <div className="h-1.5 w-1.5 rounded-none bg-background" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -387,7 +417,7 @@ export default function AISettingsPage() {
                 size="sm"
                 variant="ghost"
                 onClick={handleAddCustom}
-                className="h-6 gap-1 rounded-md px-1.5 text-[11px] font-medium text-primary"
+                className="h-6 gap-1 rounded-none px-1.5 text-[11px] font-medium text-primary"
               >
                 <Plus className="h-3 w-3" />
                 添加
@@ -405,17 +435,17 @@ export default function AISettingsPage() {
                   <div
                     key={item.id}
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-2 py-2 transition-colors",
+                      "flex items-center gap-2 rounded-none px-2 py-2 transition-colors",
                       active ? "bg-primary/10" : "hover:bg-accent/60"
                     )}
                   >
-                    <RadioDot profile={item} />
+                    <StatusDot profile={item} />
                     <button
                       type="button"
                       onClick={() => setSelectedId(item.id)}
                       className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
                     >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-muted text-[10px] font-bold text-muted-foreground">
                         {(item.name || "自").slice(0, 1).toUpperCase()}
                       </span>
                       <span
@@ -427,7 +457,23 @@ export default function AISettingsPage() {
                         {item.name || "自定义供应商"}
                       </span>
                     </button>
-                    <StatusDot profile={item} />
+                    {isModelConfigured(item) && (
+                      <button
+                        type="button"
+                        onClick={() => assignModel(textModelId === item.id ? null : item.id)}
+                        title={textModelId === item.id ? "点击取消选择" : "设为当前模型"}
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded-none border-[2.5px] transition-all",
+                          textModelId === item.id
+                            ? "border-foreground bg-foreground"
+                            : "border-foreground/40 hover:border-foreground"
+                        )}
+                      >
+                        {textModelId === item.id && (
+                          <div className="h-1.5 w-1.5 rounded-none bg-background" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -448,34 +494,32 @@ export default function AISettingsPage() {
                 {/* 供应商信息 */}
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/60">
-                      <ProviderLogo provider={selectedProfile.provider} className="h-6 w-6" />
+                    <span className="flex h-10 w-10 items-center justify-center rounded-none bg-muted/60">
+                      <ProviderLogo provider={selectedProfile.provider} name={selectedProfile.name} className="h-6 w-6" />
                     </span>
                     <div>
                       <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-                        {isPreset ? (
-                          presetDef!.name
-                        ) : (
-                          <input
-                            value={nameInput}
-                            onChange={(e) => setNameInput(e.target.value)}
-                            placeholder="供应商名称"
-                            className="w-44 rounded-none border-0 bg-transparent px-0 py-0 text-base font-semibold leading-6 text-foreground underline decoration-dashed decoration-border decoration-1 underline-offset-4 outline-none transition-colors placeholder:font-normal placeholder:text-muted-foreground hover:decoration-primary focus:decoration-primary"
-                          />
-                        )}
-                        {isPreset && presetDef!.website && (
-                          <a
-                            href={presetDef!.website}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="打开官网"
-                            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
-                        )}
+                  {isPreset ? (
+                    <a
+                      href={presetDef!.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="打开官网"
+                      className="flex items-center gap-1.5 text-[#2563eb] transition-colors hover:underline"
+                    >
+                      {presetDef!.name}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  ) : (
+                    <input
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="供应商名称"
+                      className="w-44 rounded-none border-0 bg-transparent px-0 py-0 text-base font-semibold leading-6 text-[#2563eb] underline decoration-dashed decoration-border decoration-1 underline-offset-4 outline-none transition-colors placeholder:font-normal placeholder:text-muted-foreground hover:decoration-[#2563eb] focus:decoration-[#2563eb]"
+                    />
+                  )}
                         {isCurrent && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
+                          <span className="inline-flex items-center gap-1 rounded-none bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600">
                             <Check className="h-3 w-3" />
                             当前使用
                           </span>
@@ -488,7 +532,7 @@ export default function AISettingsPage() {
                       type="button"
                       onClick={() => setDeleteOpen(true)}
                       title="删除该自定义供应商"
-                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -510,7 +554,7 @@ export default function AISettingsPage() {
                         spellCheck={false}
                         value={keyInput}
                         onChange={(e) => setKeyInput(e.target.value)}
-                        placeholder="输入 API Key，仅保存在本地浏览器"
+                        placeholder="输入 API Key"
                         className="h-9 pr-9 font-mono text-xs"
                         // 隐藏时用 CSS 掩码而非 password 类型，避免触发浏览器“保存密码”提示
                         style={
@@ -524,7 +568,7 @@ export default function AISettingsPage() {
                         type="button"
                         onClick={() => setShowKey((v) => !v)}
                         title={showKey ? "隐藏密钥" : "显示密钥"}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-none p-1 text-muted-foreground transition-colors hover:text-foreground"
                       >
                         {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -550,12 +594,6 @@ export default function AISettingsPage() {
                     <div>
                       <label className="mb-1.5 block text-xs font-medium text-foreground">
                         协议
-                        {isPreset && (
-                          <span className="ml-1 font-normal text-muted-foreground">
-                            （{presetDef!.name} 支持：
-                            {presetDef!.protocols.map((p) => PROTOCOL_LABELS[p]).join("、")}）
-                          </span>
-                        )}
                       </label>
                       <Select
                         value={protocolInput}
@@ -624,7 +662,6 @@ export default function AISettingsPage() {
                     <AlertDialogCancel>取消</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteCurrent}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       删除
                     </AlertDialogAction>
@@ -633,9 +670,9 @@ export default function AISettingsPage() {
               </AlertDialog>
 
               {/* 隐私提示：Key 只存在本地 */}
-              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+              <div className="flex items-center gap-2 rounded-none border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                <span>API Key 仅保存在本地浏览器（localStorage），不会上传到任何服务器</span>
+                <span>AI API key 仅保存在本地</span>
               </div>
             </>
           )}

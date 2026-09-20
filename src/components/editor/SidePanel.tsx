@@ -206,7 +206,7 @@ export function SidePanel() {
                 order: sections.length,
               })
             }
-            className="flex shrink-0 items-center gap-1 rounded-lg border border-dashed border-border/80 px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+            className="flex shrink-0 items-center gap-1 rounded-none border border-dashed border-border/80 px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
           >
             <Plus className="h-3.5 w-3.5" />
             添加板块
@@ -291,7 +291,7 @@ function Capsule({
   return (
     <div
       className={cn(
-        "flex items-center rounded-lg transition-colors",
+        "flex items-center rounded-none transition-colors",
         active
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -316,30 +316,26 @@ function Capsule({
       {showOps && (
         <div className="flex items-center gap-0.5 pr-1.5">
           {onToggleVisibility && (
-            <Tooltip content={hidden ? "显示该板块" : "隐藏该板块"}>
-              <button
-                onClick={onToggleVisibility}
-                aria-label="显隐该板块"
-                className="rounded p-0.5 text-muted-foreground/70 transition-colors hover:text-foreground"
-              >
-                {hidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              </button>
-            </Tooltip>
+            <button
+              onClick={onToggleVisibility}
+              aria-label="显隐该板块"
+              className="rounded-none p-0.5 text-muted-foreground/70 transition-colors hover:text-foreground"
+            >
+              {hidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            </button>
           )}
           {isCustom && onDelete && (
             <>
-              <Tooltip content="删除该板块">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmOpen(true);
-                  }}
-                  aria-label="删除该板块"
-                  className="rounded p-0.5 text-muted-foreground/70 transition-colors hover:text-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </Tooltip>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmOpen(true);
+                }}
+                aria-label="删除该板块"
+                className="rounded-none p-0.5 text-muted-foreground/70 transition-colors hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
               <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -352,7 +348,6 @@ function Capsule({
                     <AlertDialogCancel>取消</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={onDelete}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       删除
                     </AlertDialogAction>

@@ -79,7 +79,7 @@ export function BasicPanel() {
   return (
     <div className="flex flex-col gap-5">
       {/* 头像 */}
-      <section className="rounded-xl border border-border p-4">
+      <section className="rounded-none border border-border p-4">
         <h3 className="mb-3 text-sm font-semibold">头像</h3>
         <div className="flex items-start gap-5">
           {/* 头像框：容器不裁切，圆角应用到照片本身；右上角移除按钮完整显示 */}
@@ -109,7 +109,7 @@ export function BasicPanel() {
               <button
                 type="button"
                 onClick={() => updateBasicInfo({ photo: "" })}
-                className="absolute right-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white/90 transition-colors hover:bg-destructive"
+                className="absolute right-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-none bg-black/55 text-white/90 transition-colors hover:bg-destructive"
                 title="移除照片"
               >
                 <X className="h-3.5 w-3.5" />
@@ -129,7 +129,7 @@ export function BasicPanel() {
 
           {/* 右侧：显示开关 + 圆角 */}
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+            <div className="flex items-center justify-between rounded-none bg-muted/50 px-3 py-2">
               <span className="text-xs text-muted-foreground">在简历中显示</span>
               <Switch
                 checked={photoVisible}
@@ -151,7 +151,7 @@ export function BasicPanel() {
                       updateBasicInfo({ photoConfig: { ...basic.photoConfig, borderRadius: opt.value } })
                     }
                     className={cn(
-                      "rounded-md border px-1 py-1 text-[11px] transition-colors",
+                      "rounded-none border px-1 py-1 text-[11px] transition-colors",
                       (basic.photoConfig?.borderRadius ?? "none") === opt.value
                         ? "border-primary bg-primary/5 text-primary"
                         : "border-border text-muted-foreground hover:bg-accent"
@@ -170,7 +170,7 @@ export function BasicPanel() {
       </section>
 
       {/* 个人信息（字段顺序固定） */}
-      <section className="rounded-xl border border-border p-4">
+      <section className="rounded-none border border-border p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold">个人信息</h3>
           <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
@@ -257,7 +257,7 @@ export function BasicPanel() {
         </div>
 
         {/* 顶部对齐：控制姓名/职位/信息字段的整体对齐 */}
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2">
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-none bg-muted/50 px-3 py-2">
           <span className="text-xs text-muted-foreground">顶部对齐</span>
           <div className="flex items-center gap-1">
             {[
@@ -270,7 +270,7 @@ export function BasicPanel() {
                 type="button"
                 onClick={() => updateBasicInfo({ layout: opt.value })}
                 className={cn(
-                  "flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] transition-colors",
+                  "flex items-center gap-1 rounded-none border px-2 py-1 text-[11px] transition-colors",
                   (basic.layout || "left") === opt.value
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -316,7 +316,7 @@ function CustomFields({
   onChange: (fields: CustomFieldType[]) => void;
 }) {
   return (
-    <section className="rounded-xl border border-border p-4">
+    <section className="rounded-none border border-border p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold">自定义字段</h3>
         <span className="text-xs text-muted-foreground">简历中没有的字段，可在此添加</span>
@@ -324,7 +324,7 @@ function CustomFields({
       {fields.length > 0 && (
         <div className="mb-3 flex flex-col gap-2">
           {fields.map((field) => (
-            <div key={field.id} className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2">
+            <div key={field.id} className="flex items-center gap-2 rounded-none border border-border bg-background px-2.5 py-2">
               <CustomIconPicker
                 value={field.icon || ""}
                 onChange={(icon) =>
@@ -351,7 +351,7 @@ function CustomFields({
               </div>
               <button
                 onClick={() => onChange(fields.filter((f) => f.id !== field.id))}
-                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                className="rounded-none p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                 title="删除该字段"
               >
                 <X className="h-4 w-4" />
@@ -415,14 +415,14 @@ function CustomIconPicker({
         ref={btnRef}
         type="button"
         onClick={() => (open ? setOpen(false) : openPicker())}
-        className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="flex h-8 w-8 items-center justify-center rounded-none border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         title="选择标签"
       >
         <Current className="h-4 w-4" />
       </button>
       {open && pos && (
         <div
-          className="fixed z-[120] grid grid-cols-5 gap-1 rounded-xl border border-border bg-popover p-2 shadow-xl"
+          className="fixed z-[120] grid grid-cols-5 gap-1 rounded-none border border-border bg-popover p-2 shadow-xl"
           style={{ top: pos.top, left: pos.left, width: pos.width }}
         >
           {CUSTOM_ICON_OPTIONS.map((opt) => (
@@ -434,7 +434,7 @@ function CustomIconPicker({
                 setOpen(false);
               }}
               className={cn(
-                "flex h-9 items-center justify-center rounded-lg transition-colors",
+                "flex h-9 items-center justify-center rounded-none transition-colors",
                 opt.name === value
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"

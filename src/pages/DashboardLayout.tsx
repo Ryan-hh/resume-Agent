@@ -1,17 +1,37 @@
 import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { FileText, LayoutTemplate, Settings, Sparkles, ChevronLeft, Gift } from "lucide-react";
+import {
+  FileText,
+  LayoutTemplate,
+  Settings,
+  Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Gift,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { BackupBanner } from "@/components/dashboard/BackupBanner";
 import { useBackupStore } from "@/store/useBackupStore";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
 
-// 仪表盘布局：左侧可折叠导航 + 内容区
+// 仪表盘布局：TypeSafe 控制台风格窄栏
+// - 纯白栏 + 扁平导航：激活项中性灰圆角块，无品牌色 / 无左侧色条 / 无分组标签
+// - 顶部纯文字字标 + 收起按钮；收起后只剩展开按钮
+// - 收起动画：宽度 200ms ease-out 直接变窄；图标统一 pl-6（中心恒在 32px = 窄栏中线，不左右跳）；
+//   文字随宽度 max-width 收窄 + 淡出，不瞬间卸载
+// - 底部仿它的用户卡：深色圆形头像 + 两行文字
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = React.useState(false);
-  // 挂载时从 IndexedDB 恢复备份目录状态（句柄已持久化，刷新后需重新读取，
-  // 否则设置页会显示"未配置"）
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const refreshBackup = useBackupStore((s) => s.refresh);
   React.useEffect(() => {
     void refreshBackup();
@@ -21,103 +41,110 @@ export default function DashboardLayout() {
     { to: "/", icon: FileText, label: "我的简历", end: true },
     { to: "/templates", icon: LayoutTemplate, label: "模板库" },
     { to: "/ai", icon: Sparkles, label: "AI 配置" },
-    { to: "/settings", icon: Settings, label: "设置" },
     { to: "/egg", icon: Gift, label: "彩蛋" },
   ];
 
+  const handleSettingsClick = () => {
+    setSettingsOpen(true);
+  };
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-muted/30">
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
       <aside
         className={cn(
-          "relative flex h-full shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200",
-          collapsed ? "w-16" : "w-64"
+          "relative flex h-full shrink-0 flex-col border-r border-border/60 bg-[#fafafa] transition-[width] duration-100 ease-out dark:bg-background",
+          collapsed ? "w-12 overflow-visible" : "w-60 overflow-hidden"
         )}
       >
-        {/* 品牌 */}
+        {/* 顶：纯文字字标 + 收起按钮；收起后只剩展开按钮 */}
         <div
           className={cn(
-            "flex h-16 shrink-0 items-center border-b border-border/80",
-            collapsed ? "justify-center px-0" : "px-4"
+            "flex h-14 shrink-0 items-center",
+            collapsed ? "justify-center px-0" : "px-5",
           )}
         >
-          <button onClick={() => navigate("/")} className="group flex items-center gap-2.5 overflow-hidden">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
-              <FileText className="h-4 w-4" />
-            </span>
-            {!collapsed && (
-              <span className="flex min-w-0 flex-col items-start leading-tight">
-                <span className="truncate text-sm font-semibold text-foreground">简历助手</span>
-                <span className="truncate text-[10px] text-muted-foreground">在线简历制作</span>
+          {!collapsed && (
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black dark:bg-white">
+                <span className="text-base font-bold text-white dark:text-black">H</span>
+              </div>
+              <span className="truncate text-lg font-semibold tracking-tight text-foreground">
+                小昊简历
               </span>
-            )}
-          </button>
-        </div>
-
-        {/* 导航 */}
-        <nav className="flex flex-1 flex-col gap-1 px-3 py-3">
-          <p className={cn("px-3 pb-1.5 text-[10px] font-medium tracking-wider text-muted-foreground/70", collapsed && "hidden")}>
-            工作台
-          </p>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
-                  collapsed && "justify-center px-0",
-                  isActive
-                    ? "bg-primary/10 font-medium text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary" />
-                  )}
-                  <item.icon
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                    )}
-                  />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* 主题切换：固定在导航下方 */}
-        <div
-          className={cn(
-            "flex shrink-0 items-center gap-3 border-t border-border/80 px-3 py-2",
-            collapsed && "justify-center px-0"
+            </div>
           )}
-        >
-          <ThemeToggle />
-          {!collapsed && <span className="text-sm text-muted-foreground">主题</span>}
-        </div>
-
-        {/* 底部：收起 */}
-        <div className="flex shrink-0 flex-col border-t border-border/80">
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "展开侧边栏" : "收起侧边栏"}
             className={cn(
-              "flex items-center gap-2 py-3 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-              collapsed ? "justify-center px-0" : "px-6 justify-start"
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[#7aa2f7]/20 hover:text-foreground",
+              !collapsed && "ml-auto"
             )}
           >
-            <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
-            {!collapsed && "收起"}
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
           </button>
         </div>
+
+        {/* 导航：扁平列表 */}
+        <nav className="flex flex-1 flex-col gap-1 px-2 py-2">
+          {navItems.map((item) => (
+            <div key={item.to} className="relative group/navitem">
+              <NavLink
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  cn(
+                    "group relative flex items-center gap-2.5 rounded-lg py-2 pl-[7px] pr-2 text-sm leading-none transition-colors",
+                    isActive
+                      ? "bg-foreground/8 font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-[#7aa2f7]/20 hover:text-foreground"
+                  )
+                }
+              >
+                <item.icon className="block h-4 w-4 shrink-0" strokeWidth={2} />
+                {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
+              </NavLink>
+              {collapsed && (
+                <div className="pointer-events-none absolute left-full top-1/2 z-[999] ml-4 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-2.5 py-1.5 text-xs text-background opacity-0 shadow-lg transition-opacity duration-150 group-hover/navitem:opacity-100">
+                  {item.label}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* 设置按钮：固定在导航列表最下面 */}
+          <div className="relative group/navitem mt-auto">
+            <button
+              onClick={handleSettingsClick}
+              className="group relative flex w-full items-center gap-2.5 rounded-lg py-2 pl-[7px] pr-2 text-sm leading-none text-muted-foreground transition-colors hover:bg-[#7aa2f7]/20 hover:text-foreground"
+            >
+              <Settings className="block h-4 w-4 shrink-0" strokeWidth={2} />
+              {!collapsed && <span className="whitespace-nowrap">设置</span>}
+            </button>
+            {collapsed && (
+              <div className="pointer-events-none absolute left-full top-1/2 z-[999] ml-4 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-2.5 py-1.5 text-xs text-background opacity-0 shadow-lg transition-opacity duration-150 group-hover/navitem:opacity-100">
+                设置
+              </div>
+            )}
+          </div>
+        </nav>
       </aside>
 
-      <main className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
+      {/* 设置弹窗 */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>设置</DialogTitle>
+          </DialogHeader>
+          <SettingsPanel />
+        </DialogContent>
+      </Dialog>
+
+      <main className="scrollbar-hide min-h-0 flex-1 overflow-y-auto dark:bg-[#1d1d1d]">
         <BackupBanner />
         <Outlet />
       </main>

@@ -22,13 +22,15 @@ const OFFICIAL: Record<string, IconComponent> = {
   minimax: MiniMaxIcon,
 };
 
-// 服务商 logo：内置厂商显示官方品牌 logo，自定义显示首字母占位
+// 服务商 logo：内置厂商显示官方品牌 logo，自定义显示模型名称首字母占位
 export function ProviderLogo({
   provider,
+  name,
   className,
   size = 16,
 }: {
   provider: string;
+  name?: string;
   className?: string;
   size?: string | number;
 }) {
@@ -49,7 +51,7 @@ export function ProviderLogo({
         className
       )}
     >
-      {provider.slice(0, 1).toUpperCase()}
+      {(name || provider).slice(0, 1).toUpperCase()}
     </span>
   );
 }

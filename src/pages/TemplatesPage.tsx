@@ -1,13 +1,14 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, LayoutGrid } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { TEMPLATES } from "@/config/templates";
 import { useResumeStore } from "@/store/useResumeStore";
 import { initialResumeState } from "@/config/initialResumeData";
 import { ResumeData, THEME_COLORS } from "@/types/resume";
 import { TemplateCategory } from "@/types/template";
 import { TemplateThumbnail } from "@/components/preview/TemplateThumbnail";
+import { LightSwitch } from "@/components/shared/LightSwitch";
 import { cn } from "@/lib/utils";
 
 const sampleResumeBase: ResumeData = {
@@ -30,6 +31,7 @@ export default function TemplatesPage() {
   const navigate = useNavigate();
   const createResume = useResumeStore((s) => s.createResume);
   const [category, setCategory] = React.useState<TemplateCategory | "all">("all");
+
 
   // 主题色轮播：每隔一段时间自动切换一个预设色，模板预览同步变色
   const [themeIndex, setThemeIndex] = React.useState(0);
@@ -59,8 +61,12 @@ export default function TemplatesPage() {
     navigate(`/workbench/${newId}`);
   };
 
+
+
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
+      <LightSwitch />
+
       {/* 页头 */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -69,13 +75,12 @@ export default function TemplatesPage() {
         className="mb-8 flex flex-wrap items-end justify-between gap-4"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <LayoutGrid className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">
             模板库
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">选择一套心仪的模板，开始制作你的简历</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-none border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
           共 {TEMPLATES.length} 款模板
         </span>
       </motion.div>
@@ -94,7 +99,7 @@ export default function TemplatesPage() {
               key={id}
               onClick={() => setCategory(id)}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                "rounded-none border px-4 py-1.5 text-sm font-medium transition-colors",
                 active
                   ? "border-primary bg-primary text-primary-foreground shadow-sm"
                   : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
@@ -106,7 +111,7 @@ export default function TemplatesPage() {
         })}
 
         {/* 预设主题色：自动轮播，模板预览跟随变色 */}
-        <div className="ml-auto flex items-center gap-2.5 rounded-full border border-border bg-background px-3 py-1.5">
+        <div className="ml-auto flex items-center gap-2.5 rounded-none border border-border bg-background px-3 py-1.5">
           <span className="text-xs text-muted-foreground">主题</span>
           <div className="flex items-center gap-1.5">
             {THEME_COLORS.map((color, i) => {
@@ -152,7 +157,7 @@ export default function TemplatesPage() {
                 layout: { type: "tween", duration: 0.25, ease: "easeOut" },
               }}
               onClick={() => handleUse(template.id)}
-              className="group relative cursor-pointer select-none overflow-hidden rounded-2xl border border-border/70 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.08)]"
+              className="group relative cursor-pointer select-none overflow-hidden rounded-none border border-border/70 bg-white shadow-[0_6px_24px_rgba(0,0,0,0.08)]"
             >
               {/* 模板预览铺满 */}
               <TemplateThumbnail
@@ -170,7 +175,7 @@ export default function TemplatesPage() {
                     e.stopPropagation();
                     handleUse(template.id);
                   }}
-                  className="flex translate-y-1 items-center gap-1.5 rounded-full bg-black/70 px-5 py-2 text-sm font-medium text-white opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-primary"
+                  className="flex translate-y-1 items-center gap-1.5 rounded-none bg-black/70 px-5 py-2 text-sm font-medium text-white opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-primary"
                 >
                   使用此模板
                   <ArrowRight className="h-4 w-4" />

@@ -103,7 +103,7 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-1 text-left text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-none border bg-transparent px-3 py-1 text-left text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           open ? "border-primary/60 ring-1 ring-primary/20" : "border-input hover:border-input"
         )}
       >
@@ -118,7 +118,7 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
         />
       </button>
       {open && (
-        <div className="absolute left-0 right-0 z-[90] mt-1.5 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-lg">
+        <div className="absolute left-0 right-0 z-[90] mt-1.5 overflow-hidden rounded-none border border-border bg-popover p-1 shadow-lg">
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -128,7 +128,7 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
                 setOpen(false);
               }}
               className={cn(
-                "flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-sm transition-colors",
+                "flex w-full items-center rounded-none px-2.5 py-1.5 text-left text-sm transition-colors",
                 opt.value === value
                   ? "bg-primary/10 font-medium text-primary"
                   : "text-foreground hover:bg-accent"

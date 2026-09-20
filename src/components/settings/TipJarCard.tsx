@@ -10,12 +10,12 @@ export function TipJarCard() {
   const [zoomed, setZoomed] = React.useState<string | null>(null);
 
   return (
-    <Card className="overflow-hidden rounded-2xl">
+    <Card className="overflow-hidden rounded-none">
       {/* 收款码：图片保持小尺寸靠左排列，不占满容器 */}
       <div className="p-5 sm:p-6">
         <div className="flex flex-wrap gap-4">
           {/* 微信收款码 */}
-          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
+          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-none border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
             <img
               src="/tip-wechat.jpg"
               alt="微信收款码"
@@ -25,7 +25,7 @@ export function TipJarCard() {
           </div>
 
           {/* 支付宝收款码 */}
-          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
+          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-none border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
             <img
               src="/tip-alipay.jpg"
               alt="支付宝收款码"
@@ -60,11 +60,11 @@ export function TipJarCard() {
               src={zoomed}
               alt="收款码大图"
               onClick={(e) => e.stopPropagation()}
-              className="max-h-[85vh] max-w-[92vw] rounded-xl bg-white p-3 shadow-2xl"
+              className="max-h-[85vh] max-w-[92vw] rounded-none bg-white p-3 shadow-2xl"
             />
             <button
               onClick={() => setZoomed(null)}
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-none bg-white/10 text-white transition-colors hover:bg-white/20"
               title="关闭"
             >
               <X className="h-5 w-5" />

@@ -18,7 +18,7 @@ export function SettingCard({
 }) {
   const [open, setOpen] = React.useState(defaultOpen);
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="overflow-hidden rounded-none border border-border bg-card">
       <div className="flex w-full items-center justify-between gap-2 px-4 py-3">
         <button
           onClick={() => setOpen(!open)}

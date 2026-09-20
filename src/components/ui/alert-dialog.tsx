@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AlertDialogProps {
@@ -87,11 +88,17 @@ export function AlertDialogContent({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "relative z-10 w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl",
+              "relative z-10 w-full max-w-lg rounded-none border border-border bg-background p-8 shadow-2xl",
               className
             )}
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
             {children}
           </motion.div>
         </div>
@@ -102,17 +109,17 @@ export function AlertDialogContent({
 }
 
 export const AlertDialogHeader = ({ className, children }: { className?: string; children: React.ReactNode }) => (
-  <div className={cn("flex flex-col space-y-2 text-center sm:text-left", className)}>{children}</div>
+  <div className={cn("flex flex-col space-y-2 text-center sm:text-left -mt-2 mb-4", className)}>{children}</div>
 );
 
 export const AlertDialogFooter = ({ className, children }: { className?: string; children: React.ReactNode }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4", className)}>
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6 -mb-2 -mr-2", className)}>
     {children}
   </div>
 );
 
 export const AlertDialogTitle = ({ className, children }: { className?: string; children: React.ReactNode }) => (
-  <h2 className={cn("text-lg font-semibold", className)}>{children}</h2>
+  <h2 className={cn("text-xl font-semibold", className)}>{children}</h2>
 );
 
 export const AlertDialogDescription = ({ className, children }: { className?: string; children: React.ReactNode }) => (
@@ -129,7 +136,7 @@ export const AlertDialogAction = ({
     <button
       {...props}
       className={cn(
-        "inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90",
+        "inline-flex h-9 items-center justify-center rounded-none bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80",
         className
       )}
       onClick={(e) => {
@@ -152,7 +159,7 @@ export const AlertDialogCancel = ({
     <button
       {...props}
       className={cn(
-        "inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+        "inline-flex h-9 items-center justify-center rounded-none bg-transparent px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-blue-50 hover:text-foreground",
         className
       )}
       onClick={(e) => {

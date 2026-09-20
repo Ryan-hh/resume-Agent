@@ -14,6 +14,9 @@ import {
   GraduationCap,
   Palette,
   Rocket,
+  ArrowUp,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { Button, ConfigProvider, theme as antdTheme } from "antd";
 import zhCN from "antd/locale/zh_CN";
@@ -29,7 +32,8 @@ import {
 import { useResumeStore, cloneResume } from "@/store/useResumeStore";
 import { useAIConfigStore } from "@/store/useAIConfigStore";
 import { useAIAgentStore } from "@/store/useAIAgentStore";
-import { isModelConfigured, toAIConnection } from "@/config/ai-models";
+import { isModelConfigured, toAIConnection, AI_PROVIDER_DEFINITIONS } from "@/config/ai-models";
+import { ProviderLogo } from "@/components/ai/ProviderLogo";
 import { HumanMessage, type BaseMessage } from "@langchain/core/messages";
 import {
   createResumeAgent,
@@ -999,16 +1003,24 @@ export function AIEditorPanel({
             )}
           </div>
 
-          {/* Sender 输入区（ChatGPT 风格：居中圆角容器 + 圆形附件/发送按钮） */}
+          {/* Sender 输入区：上面文字输入，下面工具栏 */}
           <div className="border-t border-border/70 px-3 pb-3 pt-2">
-            <div className="mx-auto w-full max-w-xl">
-              <Sender
+            <div className="mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all focus-within:border-foreground/40 focus-within:shadow-md">
+              <textarea
+                ref={(el) => {
+                  if (el) {
+                    el.style.height = "auto";
+                    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+                  }
+                }}
                 value={input}
-                onChange={setInput}
-                onSubmit={() => void handleSend()}
-                loading={busy}
-                disabled={!!askCard}
-                onCancel={handleStop}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleSend();
+                  }
+                }}
                 placeholder={
                   askCard
                     ? "请先处理上面的确认（应用 / 放弃）"
@@ -1016,45 +1028,44 @@ export function AIEditorPanel({
                       ? "AI 正在处理…（点击停止按钮可中断）"
                       : "输入内容或指令，Enter 发送"
                 }
-                prefix={
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={busy}
-                    title="上传参考文档（PDF / Word / TXT / JSON）"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </button>
-                }
-                suffix={(_, { components }) =>
-                  busy ? (
-                    <Button
-                      type="text"
-                      shape="circle"
+                disabled={!!askCard}
+                rows={1}
+                className="w-full resize-none rounded-none bg-transparent px-3 py-2 text-[14px] leading-relaxed outline-none"
+              />
+              <div className="flex items-center justify-between border-t border-border/50 px-2 py-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={busy}
+                  title="上传参考文档（PDF / Word / TXT / JSON）"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                </button>
+                <div className="flex items-center gap-1">
+                  {/* 模型选择下拉 */}
+                  <ModelSelect />
+                  {busy ? (
+                    <button
+                      type="button"
                       onClick={handleStop}
                       title="停止生成"
-                      className="!flex h-8 w-8 !items-center !justify-center text-destructive hover:!bg-destructive/10"
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-destructive transition-colors hover:bg-destructive/10"
                     >
-                      <Square className="h-3.5 w-3.5" fill="currentColor" />
-                    </Button>
+                      <Square className="h-3 w-3" fill="currentColor" />
+                    </button>
                   ) : (
-                    // 必须渲染 antd-x 的 SendButton：它内部的 useEffect 负责同步 Sender 的 submitDisabled，
-                    // 否则 Enter 提交会被拦下（回车失效）。
-                    // 没有输入文字时按钮置灰不可点（即使已添加附件），而不是点击后才提示
-                    <components.SendButton
-                      className="!flex h-8 w-8 !items-center !justify-center rounded-full"
+                    <button
+                      type="button"
+                      onClick={() => void handleSend()}
                       disabled={!input.trim()}
-                    />
-                  )
-                }
-                onPasteFile={(files) => void handleAttachFiles(files)}
-                autoSize={{ minRows: 1, maxRows: 6 }}
-                classNames={{
-                  root: "overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all focus-within:border-foreground/40 focus-within:shadow-md",
-                  input: "!text-[14px] !leading-relaxed",
-                }}
-              />
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white transition-colors hover:bg-black/80 disabled:opacity-40 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
             <input
               ref={fileInputRef}
@@ -1228,5 +1239,107 @@ function IconButton({
     >
       {children}
     </button>
+  );
+}
+
+// 模型选择下拉
+function ModelSelect() {
+  const { models, textModelId, assignModel } = useAIConfigStore();
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const btnRef = React.useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = React.useState({ bottom: 0, right: 0 });
+
+  const configuredModels = models.filter((m) => isModelConfigured(m));
+  const current = configuredModels.find((m) => m.id === textModelId);
+
+  React.useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  React.useEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({
+        bottom: window.innerHeight - rect.top + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => setOpen(!open)}
+        disabled={configuredModels.length === 0}
+        title={current ? `当前模型：${current.model}` : "请先在 AI 配置中添加模型"}
+        className="flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+      >
+        {current?.provider ? (
+          <ProviderLogo provider={current.provider} name={current.name} className="h-3.5 w-3.5" />
+        ) : (
+          <Bot className="h-3.5 w-3.5" />
+        )}
+        <span className="max-w-[120px] truncate">
+          {current ? current.model : "选择模型"}
+        </span>
+        <ChevronDown className="h-3 w-3" />
+      </button>
+      {open && (
+        <div
+          style={{ bottom: pos.bottom, right: pos.right }}
+          className="fixed z-[130] w-56 overflow-hidden rounded-md border border-border bg-popover p-1 shadow-lg"
+        >
+          {configuredModels.length === 0 ? (
+            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+              暂无已配置的模型，请先到 AI 配置中添加
+            </div>
+          ) : (
+            <>
+              <div
+                onClick={() => {
+                  assignModel(null);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent",
+                  !textModelId && "bg-accent/50"
+                )}
+              >
+                <span className="h-4 w-4 shrink-0" />
+                <span className="truncate text-muted-foreground">不使用模型</span>
+              </div>
+              <div className="my-1 h-px bg-border" />
+              {configuredModels.map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => {
+                    assignModel(m.id);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent",
+                    m.id === textModelId && "bg-accent/50"
+                  )}
+                >
+                  {m.provider ? (
+                    <ProviderLogo provider={m.provider} name={m.name} className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <Bot className="h-4 w-4 shrink-0" />
+                  )}
+                  <span className="truncate">{m.model}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

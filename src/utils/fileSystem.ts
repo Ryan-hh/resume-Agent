@@ -167,8 +167,15 @@ export const removeBackupConfig = async (): Promise<void> => {
   await removeDirectoryHandle();
 };
 
-/** 写入/更新一份简历 JSON；改名时自动清理旧文件。返回是否写入成功。 */
+/** 生成文件名：简历名称 + 短ID，既可读又不重名 */
+const buildFileName = (title: string, id: string): string => {
+  const shortId = id.slice(0, 8);
+  return `${sanitizeFileName(title)}-${shortId}.json`;
+};
+
+/** 写入/更新一份简历 JSON。文件名用「简历名称-短ID」格式，重名不会覆盖；改名时自动删除旧文件。 */
 export const saveResumeJson = async (
+  id: string,
   title: string,
   data: unknown,
   prevTitle?: string
@@ -177,14 +184,15 @@ export const saveResumeJson = async (
     const dirHandle = await getDirectoryHandle();
     if (!dirHandle) return false;
     if (!(await queryPermission(dirHandle))) return false;
-    const fileName = `${sanitizeFileName(title)}.json`;
+    // 改名时删除旧文件
     if (prevTitle && prevTitle !== title) {
       try {
-        await dirHandle.removeEntry(`${sanitizeFileName(prevTitle)}.json`);
+        await dirHandle.removeEntry(buildFileName(prevTitle, id));
       } catch {
-        // ignore：旧文件不存在也正常
+        // 旧文件不存在也正常
       }
     }
+    const fileName = buildFileName(title, id);
     const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(JSON.stringify(data, null, 2));
@@ -197,12 +205,13 @@ export const saveResumeJson = async (
 };
 
 /** 删除一份简历 JSON。返回是否删除成功。 */
-export const deleteResumeJson = async (title: string): Promise<boolean> => {
+export const deleteResumeJson = async (id: string, title: string): Promise<boolean> => {
   try {
     const dirHandle = await getDirectoryHandle();
     if (!dirHandle) return false;
     if (!(await queryPermission(dirHandle))) return false;
-    await dirHandle.removeEntry(`${sanitizeFileName(title)}.json`);
+    const fileName = buildFileName(title, id);
+    await dirHandle.removeEntry(fileName);
     return true;
   } catch {
     return false;

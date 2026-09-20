@@ -119,7 +119,6 @@ export function BackupSidebarItem({ collapsed }: { collapsed: boolean }) {
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemove}
-              className="bg-destructive text-white hover:bg-destructive/90"
             >
               确认停止
             </AlertDialogAction>

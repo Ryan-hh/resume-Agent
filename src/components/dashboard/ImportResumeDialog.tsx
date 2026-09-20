@@ -240,9 +240,9 @@ export function ImportResumeDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-none">
           <DialogHeader>
-            <DialogTitle>导入简历</DialogTitle>
+            <DialogTitle className="text-xl">导入简历</DialogTitle>
             <DialogDescription>
               直接导入 JSON，或让 AI 识别简历文件生成草稿
             </DialogDescription>
@@ -252,7 +252,7 @@ export function ImportResumeDialog({
               disabled={importingType !== null}
               onClick={() => jsonFileInputRef.current?.click()}
               className={cn(
-                "flex flex-col items-start gap-2 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-sm",
+                "flex flex-col items-start gap-2 rounded-none border border-border p-4 text-left transition-all hover:border-primary/40 hover:bg-accent/50",
                 importingType !== null && "opacity-60"
               )}
             >
@@ -275,7 +275,7 @@ export function ImportResumeDialog({
               disabled={importingType !== null}
               onClick={() => aiFileInputRef.current?.click()}
               className={cn(
-                "flex flex-col items-start gap-2 rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-sm",
+                "flex flex-col items-start gap-2 rounded-none border border-border p-4 text-left transition-all hover:border-primary/40 hover:bg-accent/50",
                 importingType !== null && "opacity-60"
               )}
             >
@@ -295,9 +295,6 @@ export function ImportResumeDialog({
               </span>
             </button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            隐私提示：AI 解析会将文件内容发送至你配置的模型服务商（Key 仅存于本地浏览器）。
-          </p>
         </DialogContent>
         <input
           ref={jsonFileInputRef}

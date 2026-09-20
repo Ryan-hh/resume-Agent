@@ -7,11 +7,6 @@ import {
   Trash2,
   Info,
   Settings2,
-  FileText,
-  Tag,
-  Database,
-  HardDrive,
-  Check,
   FolderOpen,
   Loader2,
 } from "lucide-react";
@@ -31,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LightSwitch } from "@/components/shared/LightSwitch";
 import { cn } from "@/lib/utils";
 
 // 设置页：备份目录配置（选择文件夹 → 自动保存简历与 AI 配置）
@@ -70,18 +66,7 @@ export default function SettingsPage() {
     toast.success("已移除备份目录");
   };
 
-  // 关于板块信息行（均为应用内已确认的事实）
-  const aboutRows = [
-    { icon: FileText, label: "应用名称", value: "简历助手" },
-    { icon: Tag, label: "版本", value: "v2.0" },
-    { icon: Database, label: "数据存储", value: "浏览器 localStorage（仅本地）" },
-    {
-      icon: HardDrive,
-      label: "自动备份",
-      value: isConfigured === null ? "检测中…" : isConfigured ? "已开启" : "未开启",
-      highlight: isConfigured === true,
-    },
-  ];
+
 
   // 动画：各卡片依次入场
   const cardMotion = {
@@ -92,6 +77,8 @@ export default function SettingsPage() {
 
   return (
     <div className="relative mx-auto w-full max-w-7xl px-6 py-10 lg:px-8">
+      <LightSwitch />
+
       {/* 页头 */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -100,8 +87,7 @@ export default function SettingsPage() {
         className="mb-8 flex flex-wrap items-center justify-between gap-4"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <Settings2 className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">
             设置
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">配置自动备份文件夹与应用信息</p>
@@ -214,57 +200,6 @@ export default function SettingsPage() {
           </Card>
         </motion.div>
 
-        {/* 关于 */}
-        <motion.div {...cardMotion} transition={{ ...cardMotion.transition, delay: 0.08 }}>
-          <Card className="overflow-hidden rounded-2xl">
-            <CardHeader className="border-b border-border/60 bg-muted/20 p-5">
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 shadow-sm ring-1 ring-primary/10">
-                  <Info className="h-5 w-5 text-primary" />
-                </span>
-                <div>
-                  <CardTitle className="text-[15px]">关于</CardTitle>
-                  <CardDescription className="mt-1 text-xs">
-                    简历助手 v2.0 — 数据仅保存在本地浏览器（localStorage）。
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5">
-              <div className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/70">
-                {aboutRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="flex items-center justify-between gap-3 bg-background/40 px-3.5 py-2.5 transition-colors hover:bg-muted/40"
-                  >
-                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <row.icon
-                        className={cn(
-                          "h-4 w-4",
-                          row.highlight ? "text-emerald-500" : "text-muted-foreground/70"
-                        )}
-                      />
-                      {row.label}
-                    </span>
-                    <span
-                      className={cn(
-                        "flex items-center gap-1.5 text-xs font-medium",
-                        row.highlight ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"
-                      )}
-                    >
-                      {row.highlight && <Check className="h-3 w-3" strokeWidth={3} />}
-                      {row.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                所有简历数据均保存在你的浏览器本地，不经过任何服务器；如需多设备同步，可在「数据与备份」中开启文件夹同步
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
       </div>
 
       {/* 停止备份确认对话框 */}
@@ -279,10 +214,7 @@ export default function SettingsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRemove}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleRemove}>
               确认移除
             </AlertDialogAction>
           </AlertDialogFooter>

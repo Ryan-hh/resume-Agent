@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>工作台重设计方案 · OpenAI 风</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background:#e9e9eb;
+    color:#0d0d0d;
+    -webkit-font-smoothing:antialiased;
+    font-size:13px;
+  }
+  .stage {
+    width:100vw; height:100vh; margin:0; background:#f4f4f5;
+    display:flex; overflow:hidden;
+  }
+
+  /* ============ ① 最左竖条（保留用户喜欢的） ============ */
+  .dock {
+    width:56px; flex:none; background:#ffffff; border-right:1px solid #ececee;
+    display:flex; flex-direction:column; align-items:center; padding:10px 0;
+  }
+  .dock .grp { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .dock .sep { width:20px; height:1px; background:#e6e6e9; margin:10px 0; }
+  .dock .spacer { flex:1; }
+  .dbtn {
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#70707a; cursor:pointer; transition:all .15s;
+  }
+  .dbtn:hover { background:#f0f0f2; color:#1a1a1a; }
+  .dbtn.active { background:#101010; color:#fff; }
+  .dbtn svg { width:17px; height:17px; }
+
+  /* ============ 主区 ============ */
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+  /* ============ ② 统一顶栏（新增） ============ */
+  .topbar {
+    height:48px; flex:none; background:#ffffff; border-bottom:1px solid #ececee;
+    display:flex; align-items:center; gap:12px; padding:0 16px;
+  }
+  .crumb { display:flex; align-items:center; gap:8px; min-width:0; }
+  .crumb .back {
+    width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    color:#70707a;
+  }
+  .crumb .back:hover { background:#f0f0f2; }
+  .crumb .title { font-size:13.5px; font-weight:600; }
+  .crumb .dot { width:6px; height:6px; border-radius:50%; background:#22c55e; }
+  .crumb .saved { font-size:11.5px; color:#9a9aa5; }
+  .topbar .right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+  .tbtn {
+    height:32px; padding:0 10px; border-radius:8px; display:flex; align-items:center; gap:6px;
+    color:#55555e; font-size:12.5px; cursor:pointer;
+  }
+  .tbtn:hover { background:#f0f0f2; }
+  .tbtn svg { width:15px; height:15px; }
+  .tbtn.primary { background:#101010; color:#fff; padding:0 14px; font-weight:500; }
+  .tbtn.primary:hover { background:#262626; }
+  .vdiv { width:1px; height:18px; background:#e6e6e9; margin:0 4px; }
+
+  /* ============ 三栏 ============ */
+  .cols { flex:1; display:flex; min-height:0; }
+
+  /* ---- 左：编辑 ---- */
+  .editor {
+    width:340px; flex:none; background:#ffffff; border-right:1px solid #ececee;
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .tabs {
+    flex:none; display:flex; align-items:center; gap:2px; padding:0 12px;
+    border-bottom:1px solid #f0f0f1;
+  }
+  .tab {
+    padding:0 12px; height:42px; display:flex; align-items:center; gap:6px;
+    font-size:12.5px; color:#8a8a94; cursor:pointer; border-bottom:2px solid transparent;
+    white-space:nowrap;
+  }
+  .tab.active { color:#101010; font-weight:600; border-bottom-color:#101010; }
+  .tab .more { color:#b6b6be; font-size:10px; }
+  .tab.add { color:#b6b6be; }
+  .form { flex:1; overflow:hidden; padding:18px 18px 24px; }
+  .form .sec { font-size:13px; font-weight:600; margin-bottom:14px; }
+  .form .row { display:flex; gap:12px; margin-bottom:14px; }
+  .field { flex:1; }
+  .field label { display:block; font-size:11.5px; color:#9a9aa5; margin-bottom:6px; }
+  .field input {
+    width:100%; height:36px; border:1px solid #e6e6e9; border-radius:8px; padding:0 10px;
+    font-size:13px; color:#1a1a1a; background:#fff; outline:none;
+  }
+  .field input:focus { border-color:#101010; }
+  .field textarea {
+    width:100%; min-height:96px; border:1px solid #e6e6e9; border-radius:8px; padding:10px;
+    font-size:12.5px; line-height:1.7; color:#2a2a2a; background:#fff; outline:none; resize:none;
+  }
+  .field textarea:focus { border-color:#101010; }
+  .richbar {
+    display:flex; align-items:center; gap:2px; margin:10px 0 8px; color:#9a9aa5; font-size:11.5px;
+  }
+  .richbar span { padding:3px 7px; border-radius:5px; }
+  .richbar span:hover { background:#f0f0f2; color:#1a1a1a; }
+  .richbar .sp { flex:1; }
+  .richbar .ai { color:#7c5cff; }
+
+  /* ---- 中：舞台（主角） ---- */
+  .stage-col {
+    flex:1; min-width:0; background:#ececee; display:flex; flex-direction:column;
+  }
+  .paper {
+    flex:1; display:flex; align-items:flex-start; justify-content:center; overflow:auto; padding:28px;
+  }
+  .a4 {
+    width:520px; background:#fff; border-radius:2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.10);
+    padding:34px 36px; flex:none;
+  }
+  .a4 h1 { font-size:20px; margin-bottom:2px; }
+  .a4 .role { font-size:12px; color:#666; margin-bottom:14px; }
+  .a4 .meta { font-size:10.5px; color:#777; line-height:1.7; margin-bottom:14px; }
+  .a4 h3 { font-size:12.5px; margin:14px 0 6px; border-left:3px solid #101010; padding-left:7px; }
+  .a4 p, .a4 li { font-size:10.5px; color:#333; line-height:1.75; }
+  .a4 ul { padding-left:14px; }
+
+  /* ---- 右：AI ---- */
+  .ai {
+    width:300px; flex:none; background:#ffffff; border-left:1px solid #ececee;
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .ai-head {
+    height:44px; flex:none; display:flex; align-items:center; gap:8px; padding:0 14px;
+    border-bottom:1px solid #f0f0f1;
+  }
+  .ai-head .name { font-size:13px; font-weight:600; }
+  .ai-head .ready { display:flex; align-items:center; gap:4px; font-size:11px; color:#22c55e; }
+  .ai-head .ready i { width:6px; height:6px; border-radius:50%; background:#22c55e; }
+  .ai-head .ops { margin-left:auto; display:flex; gap:2px; }
+  .ai-head .ops .o {
+    width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#9a9aa5;
+  }
+  .ai-head .ops .o:hover { background:#f0f0f2; color:#1a1a1a; }
+  .ai-head .ops .o svg { width:15px; height:15px; }
+
+  .ai-body { flex:1; overflow:auto; padding:28px 18px; display:flex; flex-direction:column; align-items:center; }
+  .bot-ava {
+    width:46px; height:46px; border-radius:50%; background:#f0f0f2;
+    display:flex; align-items:center; justify-content:center; color:#55555e; margin-bottom:14px;
+  }
+  .bot-ava svg { width:22px; height:22px; }
+  .ai-body h2 { font-size:15px; font-weight:600; margin-bottom:6px; }
+  .ai-body p { font-size:12px; color:#9a9aa5; text-align:center; line-height:1.6; margin-bottom:22px; }
+  .chips { display:flex; flex-direction:column; gap:8px; width:100%; }
+  .chip {
+    width:100%; text-align:left; background:#fff; border:1px solid #e6e6e9; border-radius:10px;
+    padding:11px 12px; display:flex; gap:10px; align-items:center; cursor:pointer;
+  }
+  .chip:hover { border-color:#c9c9cf; background:#fafafa; }
+  .chip .ic {
+    width:30px; height:30px; border-radius:8px; background:#f4f4f5; color:#55555e; flex:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .chip .ic svg { width:15px; height:15px; }
+  .chip .t1 { font-size:12.5px; font-weight:500; }
+  .chip .t2 { font-size:11px; color:#9a9aa5; margin-top:1px; }
+
+  .ai-input {
+    flex:none; padding:12px 14px 16px;
+  }
+  .composer {
+    border:1px solid #e0e0e4; border-radius:18px; background:#fff; padding:10px 12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);
+  }
+  .composer textarea {
+    width:100%; border:none; outline:none; resize:none; font-size:13px; height:40px; font-family:inherit;
+    color:#1a1a1a;
+  }
+  .composer .bar { display:flex; align-items:center; margin-top:6px; color:#9a9aa5; }
+  .composer .bar .att { width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
+  .composer .bar .att svg { width:16px; height:16px; }
+  .composer .bar .send {
+    margin-left:auto; width:30px; height:30px; border-radius:50%; background:#101010; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .composer .bar .send svg { width:14px; height:14px; }
+
+  /* 标注 */
+  .anno {
+    position:absolute; background:#fff7ed; border:1px solid #fdba74; color:#9a3412;
+    font-size:11px; padding:4px 8px; border-radius:6px; white-space:nowrap;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+  }
+  .wrap { position:relative; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="stage">
+
+  <!-- ① 最左竖条（保留） -->
+  <aside class="dock">
+    <div class="grp">
+      <div class="dbtn active" title="内容编辑">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </div>
+      <div class="dbtn" title="模板">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="dbtn" title="样式">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <div class="dbtn" title="撤销"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></div>
+      <div class="dbtn" title="重做"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5v0A5.5 5.5 0 0 0 9.5 20H13"/></svg></div>
+      <div class="dbtn" title="导出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="grp">
+      <div class="dbtn" title="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></div>
+      <div class="dbtn" title="帮助"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <!-- ② 统一顶栏 -->
+    <header class="topbar">
+      <div class="crumb">
+        <div class="back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></div>
+        <span class="title">张三 · 高级前端工程师</span>
+        <span class="dot"></span>
+        <span class="saved">已自动保存</span>
+      </div>
+      <div class="right">
+        <div class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>主题</div>
+        <div class="vdiv"></div>
+        <div class="tbtn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出 PDF</div>
+      </div>
+    </header>
+
+    <div class="cols">
+      <!-- ③ 左：编辑 -->
+      <section class="editor">
+        <nav class="tabs">
+          <div class="tab">基本信息</div>
+          <div class="tab active">教育背景</div>
+          <div class="tab">专业技能</div>
+          <div class="tab">工作经历</div>
+          <div class="tab">+</div>
+        </nav>
+        <div class="form">
+          <div class="sec">教育背景</div>
+          <div class="row">
+            <div class="field"><label>学校名称</label><input value="北京大学" /></div>
+            <div class="field"><label>专业</label><input value="计算机科学与技术" /></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>学历</label><input value="本科" /></div>
+            <div class="field"><label>在校时间</label><input value="2013.09 – 2017.06" /></div>
+          </div>
+          <div class="field">
+            <label>在校经历（可选）</label>
+            <div class="richbar">
+              <span>B</span><span><i style="font-style:italic">I</i></span><span>•</span><span>1.</span>
+              <span class="sp"></span>
+              <span class="ai">✦ AI 润色</span>
+            </div>
+            <textarea>· 主修课程：数据结构、算法设计、操作系统、计算机网络、Web 开发技术
+· 专业排名前 5%，连续三年获得一等奖学金
+· 担任计算机协会技术部部长，组织多次技术分享会</textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ④ 中：舞台（主角） -->
+      <section class="stage-col">
+        <div class="paper">
+          <div class="a4">
+            <h1>张三</h1>
+            <div class="role">高级前端工程师</div>
+            <div class="meta">1998.05（28岁） · 男 · 13800138000 · zhansan@example.com<br/>北京市朝阳区 · https://zhangsan.dev</div>
+            <h3>教育背景</h3>
+            <p><b>北京大学</b>　计算机科学与技术 · 本科　<span style="float:right">2013.09 – 2017.06</span></p>
+            <ul>
+              <li>主修课程：数据结构、算法设计、操作系统、计算机网络、Web 开发技术</li>
+              <li>专业排名前 5%，连续三年获得一等奖学金</li>
+            </ul>
+            <h3>专业技能</h3>
+            <ul>
+              <li>前端框架：熟悉 React、Vue.js，熟悉 Next.js、Nuxt.js 等 SSR 框架</li>
+              <li>状态管理：Redux、Zustand、Jotai、React Query</li>
+              <li>工程化工具：Webpack、Vite、Rollup、Babel、ESLint</li>
+            </ul>
+            <h3>工作经历</h3>
+            <p><b>字节跳动</b>　高级前端工程师　<span style="float:right">2021.07 – 2024.12</span></p>
+            <ul>
+              <li>负责抖音创作者平台的开发与维护，主导多个核心功能的技术方案设计</li>
+              <li>优化项目工程化配置，将构建时间从 8 分钟优化至 2 分钟</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ⑤ 右：AI -->
+      <aside class="ai">
+        <div class="ai-head">
+          <span class="name">智能小昊</span>
+          <span class="ready"><i></i>就绪</span>
+          <div class="ops">
+            <div class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
+            <div class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+            <div class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+          </div>
+        </div>
+        <div class="ai-body">
+          <div class="bot-ava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8M9 13h.01M15 13h.01"/></svg></div>
+          <h2>今天想优化简历的哪部分？</h2>
+          <p>说一句话，我直接改到简历上<br/>改完你在中间实时看效果</p>
+          <div class="chips">
+            <div class="chip">
+              <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></div>
+              <div><div class="t1">润色工作经历</div><div class="t2">优化表达，让描述更专业有力</div></div>
+            </div>
+            <div class="chip">
+              <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg></div>
+              <div><div class="t1">补全教育背景</div><div class="t2">整理学历信息并规范时间格式</div></div>
+            </div>
+            <div class="chip">
+              <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18c-1.5 0-2-1-2-2s.5-1.5.5-2-.5-1.5-.5-2 .5-2 .5-2-.5-1.5-.5-2 .5-2 .5-2-.5-1.5-.5-2 .5-2z"/></svg></div>
+              <div><div class="t1">调整简历样式</div><div class="t2">主题色、字号、行距、页边距</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-input">
+          <div class="composer">
+            <textarea placeholder="输入内容或指令…"></textarea>
+            <div class="bar">
+              <div class="att"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+              <div class="send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

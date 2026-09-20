@@ -1,12 +1,13 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { FilePlus2, FolderOpen, FileText } from "lucide-react";
+import { Plus, FolderOpen, FileText, Trash2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { ResumeCardItem } from "@/components/dashboard/ResumeCardItem";
 import { CreateResumeModal } from "@/components/dashboard/CreateResumeModal";
 import { ImportResumeDialog } from "@/components/dashboard/ImportResumeDialog";
 import { Button } from "@/components/ui/button";
+import { LightSwitch } from "@/components/shared/LightSwitch";
 
 // 我的简历页
 export default function ResumesPage() {
@@ -23,6 +24,8 @@ export default function ResumesPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
+      <LightSwitch />
+
       {/* 页头 */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -31,8 +34,7 @@ export default function ResumesPage() {
         className="mb-8 flex flex-wrap items-end justify-between gap-4"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <FileText className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">
             我的简历
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -42,12 +44,15 @@ export default function ResumesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="lg" onClick={() => setImportOpen(true)}>
+          <button
+            onClick={() => setImportOpen(true)}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-none bg-transparent px-4 text-base font-medium text-[#2563eb] transition-colors hover:underline"
+          >
             <FolderOpen className="h-4 w-4" />
             导入
-          </Button>
-          <Button size="lg" onClick={() => setCreateOpen(true)}>
-            <FilePlus2 className="h-4 w-4" />
+          </button>
+          <Button size="lg" className="rounded-none bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/90" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
             新建简历
           </Button>
         </div>

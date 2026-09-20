@@ -1,12 +1,23 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { LayoutTemplate, ArrowLeft, Github, CircleHelp, SlidersHorizontal, FilePen, Undo2, Redo2, FileDown } from "lucide-react";
+import { LayoutTemplate, ArrowLeft, Github, CircleHelp, SlidersHorizontal, FilePen, Undo2, Redo2, FileDown, Shrink, Copy, Trash2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { Tooltip } from "@/components/ui/tooltip";
 import { FAQDialog } from "./FAQDialog";
 import { PdfExport } from "@/components/shared/PdfExport";
 import { LeftMode } from "@/components/editor/LeftWorkspace";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // 竖排工具栏：位于表单板块左侧的真实布局一栏（非悬浮），
 // 切换左侧操作区模式（内容编辑 / 模板 / 样式）+ 撤销重做/导出 + 返回 / GitHub / FAQ
@@ -22,6 +33,23 @@ export function PreviewDock({
   const redo = useResumeStore((s) => s.redo);
   const canUndo = useResumeStore((s) => s.canUndo());
   const canRedo = useResumeStore((s) => s.canRedo());
+  const activeResume = useResumeStore((s) => s.activeResume);
+  const duplicateResume = useResumeStore((s) => s.duplicateResume);
+  const deleteResume = useResumeStore((s) => s.deleteResume);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+
+  const handleDuplicate = () => {
+    if (!activeResume) return;
+    duplicateResume(activeResume.id);
+    toast.success("已复制简历");
+  };
+
+  const handleDelete = () => {
+    if (!activeResume) return;
+    deleteResume(activeResume);
+    toast.success("已删除简历");
+    navigate("/");
+  };
 
   const modeButtons: { key: LeftMode; icon: React.ElementType; tooltip: string }[] = [
     { key: "content", icon: FilePen, tooltip: "内容编辑" },
@@ -67,6 +95,24 @@ export function PreviewDock({
             </DockButton>
           }
         />
+        <DockButton
+          tooltip="智能一页"
+          onClick={() => toast.info("智能一页功能开发中，敬请期待")}
+        >
+          <Shrink className="h-4 w-4" />
+        </DockButton>
+      </div>
+
+      <div className="my-1 h-px w-6 bg-border" />
+
+      {/* 复制 / 删除 */}
+      <div className="flex flex-col items-center gap-1">
+        <DockButton tooltip="复制简历" onClick={handleDuplicate}>
+          <Copy className="h-4 w-4" />
+        </DockButton>
+        <DockButton tooltip="删除简历" onClick={() => setDeleteOpen(true)}>
+          <Trash2 className="h-4 w-4" />
+        </DockButton>
       </div>
 
       <div className="my-1 h-px w-6 bg-border" />
@@ -94,6 +140,22 @@ export function PreviewDock({
           }
         />
       </div>
+
+      {/* 删除确认对话框 */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除简历</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认删除简历「{activeResume?.title}」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

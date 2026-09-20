@@ -7,7 +7,6 @@ import HomePage from "@/pages/HomePage";
 import DashboardLayout from "@/pages/DashboardLayout";
 import ResumesPage from "@/pages/ResumesPage";
 import TemplatesPage from "@/pages/TemplatesPage";
-import SettingsPage from "@/pages/SettingsPage";
 import AISettingsPage from "@/pages/AISettingsPage";
 import EasterEggPage from "@/pages/EasterEggPage";
 import WorkbenchPage from "@/pages/WorkbenchPage";
@@ -47,7 +46,6 @@ function App() {
             <Route index element={<ResumesPage />} />
             <Route path="templates" element={<TemplatesPage />} />
             <Route path="ai" element={<AISettingsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
             <Route path="egg" element={<EasterEggPage />} />
           </Route>
           <Route path="/workbench/:id" element={<WorkbenchPage />} />

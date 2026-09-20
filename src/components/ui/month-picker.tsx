@@ -101,14 +101,14 @@ export function MonthPicker({
       <div
         ref={triggerRef}
         className={cn(
-          "flex h-9 w-full items-center rounded-md border bg-transparent shadow-sm transition-colors",
+          "flex h-9 w-full items-center rounded-none border bg-transparent shadow-sm transition-colors",
           open ? "border-primary/60 ring-1 ring-primary/20" : "border-input hover:border-input"
         )}
       >
         <button
           type="button"
           onClick={() => (open ? setOpen(false) : openPicker())}
-          className="flex h-full min-w-0 flex-1 items-center rounded-l-md px-3 text-left text-sm focus-visible:outline-none"
+          className="flex h-full min-w-0 flex-1 items-center rounded-none px-3 text-left text-sm focus-visible:outline-none"
         >
           <span className={cn("truncate", !parsed && "text-muted-foreground")}>
             {parsed ? formatCN(parsed.y, parsed.m) : placeholder}
@@ -145,7 +145,7 @@ export function MonthPicker({
 
       {open && pos && (
         <div
-          className="fixed z-[120] rounded-xl border border-border bg-popover p-3 shadow-xl"
+          className="fixed z-[120] rounded-none border border-border bg-popover p-3 shadow-xl"
           style={{ top: pos.top, left: pos.left, width: pos.width }}
         >
           {/* ===== 月份视图 ===== */}
@@ -155,7 +155,7 @@ export function MonthPicker({
                 <button
                   type="button"
                   onClick={() => setView({ y: year - 1, m: view.m })}
-                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   aria-label="上一年"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -163,14 +163,14 @@ export function MonthPicker({
                 <button
                   type="button"
                   onClick={() => setMode("year")}
-                  className="rounded-md px-2 py-0.5 text-sm font-medium transition-colors hover:bg-accent"
+                  className="rounded-none px-2 py-0.5 text-sm font-medium transition-colors hover:bg-accent"
                 >
                   {year} 年
                 </button>
                 <button
                   type="button"
                   onClick={() => setView({ y: year + 1, m: view.m })}
-                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   aria-label="下一年"
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -185,7 +185,7 @@ export function MonthPicker({
                       type="button"
                       onClick={() => handlePickMonth(m)}
                       className={cn(
-                        "flex h-9 items-center justify-center rounded-lg text-sm transition-colors",
+                        "flex h-9 items-center justify-center rounded-none text-sm transition-colors",
                         isCurrent
                           ? "bg-primary font-medium text-primary-foreground"
                           : "text-foreground hover:bg-accent"
@@ -206,7 +206,7 @@ export function MonthPicker({
                 <button
                   type="button"
                   onClick={() => setView({ y: yearStart - 1, m: view.m })}
-                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   aria-label="前 12 年"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -217,7 +217,7 @@ export function MonthPicker({
                 <button
                   type="button"
                   onClick={() => setView({ y: yearStart + 11, m: view.m })}
-                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   aria-label="后 12 年"
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -232,7 +232,7 @@ export function MonthPicker({
                       type="button"
                       onClick={() => handlePickYear(y)}
                       className={cn(
-                        "flex h-9 items-center justify-center rounded-lg text-sm transition-colors",
+                        "flex h-9 items-center justify-center rounded-none text-sm transition-colors",
                         isCurrent ? "bg-primary/10 font-medium text-primary" : "text-foreground hover:bg-accent"
                       )}
                     >

@@ -63,6 +63,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 鼠标样式：可点击元素显示手型（Tailwind v4 preflight 默认不再给按钮 pointer） */
@@ -269,3 +270,18 @@ a[aria-disabled="true"] {
 }
 
 /* （已取消：模板 section 悬停高亮与点击跳转编辑，改为纯展示） */
+
+/* View Transitions 圆形揭示效果 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}

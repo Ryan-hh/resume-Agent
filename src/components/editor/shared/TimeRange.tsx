@@ -22,7 +22,7 @@ export function TimeRangeInput({
       </div>
       <div className="min-w-0 flex-1">
         {isPresent ? (
-          <div className="flex h-9 items-center rounded-md border border-input bg-muted/40 px-3 text-sm text-muted-foreground">
+          <div className="flex h-9 items-center rounded-none border border-input bg-muted/40 px-3 text-sm text-muted-foreground">
             至今
           </div>
         ) : (

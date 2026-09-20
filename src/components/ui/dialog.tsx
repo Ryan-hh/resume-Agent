@@ -60,7 +60,7 @@ export function DialogContent({
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              "relative z-10 w-full max-w-lg rounded-2xl border border-border bg-background p-6 shadow-2xl",
+              "relative z-10 w-full max-w-lg rounded-none border border-border bg-background p-6 shadow-2xl",
               className
             )}
           >
@@ -88,7 +88,7 @@ export const DialogTitle = ({
   className?: string;
   children: React.ReactNode;
 }) => (
-  <h2 className={cn("text-lg font-semibold leading-none tracking-tight", className)}>{children}</h2>
+  <h2 className={cn("text-xl font-semibold tracking-tight", className)}>{children}</h2>
 );
 
 export const DialogDescription = ({

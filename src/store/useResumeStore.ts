@@ -69,7 +69,7 @@ const pushHistory = (
 
 interface PendingSync {
   timer: ReturnType<typeof setTimeout>;
-  prevResume?: ResumeData;
+  prevTitle?: string;
 }
 
 interface ResumeStore {
@@ -144,16 +144,16 @@ const createSafeLocalStorage = (): StateStorage => ({
   removeItem: (name) => localStorage.removeItem(name),
 });
 
-const syncResumeToFile = async (resumeData: ResumeData, prevResume?: ResumeData) => {
+const syncResumeToFile = async (resumeData: ResumeData, prevTitle?: string) => {
   if (typeof window === "undefined") return;
   if (!useBackupStore.getState().isConfigured) return;
-  await saveResumeJson(resumeData.title, resumeData, prevResume?.title);
+  await saveResumeJson(resumeData.id, resumeData.title, resumeData, prevTitle);
 };
 
 const deleteResumeFile = async (resumeData: ResumeData) => {
   if (typeof window === "undefined") return;
   if (!useBackupStore.getState().isConfigured) return;
-  await deleteResumeJson(resumeData.title);
+  await deleteResumeJson(resumeData.id, resumeData.title);
 };
 
 const pendingSyncs = new Map<string, PendingSync>();
@@ -167,12 +167,12 @@ const clearPendingSync = (resumeId: string) => {
 const debouncedSyncToFile = (resumeData: ResumeData, prevResume?: ResumeData) => {
   const pendingSync = pendingSyncs.get(resumeData.id);
   if (pendingSync) clearTimeout(pendingSync.timer);
-  const prevResumeForSync = pendingSync?.prevResume ?? prevResume;
+  const prevTitle = pendingSync?.prevTitle ?? prevResume?.title;
   const timer = setTimeout(() => {
-    syncResumeToFile(resumeData, prevResumeForSync);
+    syncResumeToFile(resumeData, prevTitle);
     pendingSyncs.delete(resumeData.id);
   }, 1500);
-  pendingSyncs.set(resumeData.id, { timer, prevResume: prevResumeForSync });
+  pendingSyncs.set(resumeData.id, { timer, prevTitle });
 };
 
 export const useResumeStore = create(
@@ -294,10 +294,23 @@ export const useResumeStore = create(
         if (!resume) return resumeId;
         const newId = generateUUID();
         const now = new Date().toISOString();
+
+        // 生成副本名称：避免出现 "副本副本"
+        let baseTitle = resume.title;
+        let copyNum = 1;
+        const match = resume.title.match(/^(.*?) - 副本(?:(\d+))?$/);
+        if (match) {
+          baseTitle = match[1];
+          copyNum = match[2] ? parseInt(match[2]) + 1 : 2;
+        }
+        const newTitle = copyNum === 1
+          ? `${baseTitle} - 副本`
+          : `${baseTitle} - 副本${copyNum}`;
+
         const newResume = {
           ...cloneResume(resume),
           id: newId,
-          title: `${resume.title} - ${"副本"}`,
+          title: newTitle,
           createdAt: now,
           updatedAt: now,
         };
