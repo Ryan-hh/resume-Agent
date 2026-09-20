@@ -301,7 +301,7 @@ export default function WorkbenchPage() {
   const dockItems: { key: PanelKey; icon: React.ElementType; label: string; isOpen: boolean }[] = [
     { key: "left", icon: PanelLeft, label: "编辑", isOpen: open.left },
     { key: "preview", icon: Eye, label: "预览", isOpen: open.preview },
-    { key: "ai", icon: Bot, label: "AI 助手", isOpen: open.ai },
+    { key: "ai", icon: Bot, label: "智能小昊", isOpen: open.ai },
   ];
 
   return (
@@ -365,7 +365,7 @@ export default function WorkbenchPage() {
         {open.preview && open.ai && (
           <PanelDivider
             innerRef={rightDividerRef}
-            label="调整右侧 AI 助手宽度"
+            label="调整右侧 智能小昊 宽度"
             onReset={() => resetDivider("right")}
             onNudge={nudgeDivider("right")}
             style={{ left: `${sizes.left + sizes.preview}%` }}
@@ -390,7 +390,7 @@ export default function WorkbenchPage() {
                     fallback={
                       <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-xs">正在加载 AI 助手…</span>
+                        <span className="text-xs">正在加载 智能小昊…</span>
                       </div>
                     }
                   >

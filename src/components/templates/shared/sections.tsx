@@ -87,6 +87,9 @@ export type SectionTitleVariant =
   | "elegant" // 居中 + 两侧装饰线
   | "icon" // 图标 + 竖线
   | "chip" // 蓝色实心圆图标 + 彩色标题 + 右侧延伸细线
+  | "solid-label" // 实心色块标签 + 白字（超级蓝 / 标签黑）
+  | "gray-band" // 整行浅灰背景条 + 深色标题（极简灰）
+  | "rule" // 深色粗体标题 + 整行主题色细线（深色科技）
   | "editorial"; // 编号 + 粗体
 
 export function SectionTitle({
@@ -172,6 +175,32 @@ export function SectionTitle({
         <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "12px" }}>
           <span style={{ ...common, color: themeColor, fontFamily: "Georgia, serif" }}>{String(title).slice(0, 1)}</span>
           <h3 style={{ ...common, textTransform: "uppercase", letterSpacing: "0.06em" }}>{title}</h3>
+        </div>
+      );
+    case "solid-label":
+      // 实心色块标签 + 白字（直角方块）
+      return (
+        <div style={{ marginBottom: "12px" }}>
+          <h3 style={{ ...common, display: "inline-block", background: themeColor, color: "#ffffff", padding: "3px 10px", lineHeight: 1.3 }}>
+            {title}
+          </h3>
+        </div>
+      );
+    case "gray-band":
+      // 整行浅灰背景条 + 深色标题
+      return (
+        <div style={{ marginBottom: "12px" }}>
+          <div style={{ background: "#F6F8FA", padding: "8px 12px" }}>
+            <h3 style={{ ...common, color: "#1A1A1A", margin: 0 }}>{title}</h3>
+          </div>
+        </div>
+      );
+    case "rule":
+      // 深色粗体标题 + 整行主题色细线
+      return (
+        <div style={{ marginBottom: "12px" }}>
+          <h3 style={{ ...common, color: "#1A1A1A", margin: 0 }}>{title}</h3>
+          <div style={{ width: "100%", height: "2px", background: themeColor, marginTop: "6px" }} />
         </div>
       );
     default:

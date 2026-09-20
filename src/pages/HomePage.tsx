@@ -1,5 +1,13 @@
 import React from "react";
-import { LandingHeader, HeroSection, FeaturesSection, CTASection, Footer } from "@/components/home/HomeSections";
+import {
+  LandingHeader,
+  HeroSection,
+  FeaturesSection,
+  TechSection,
+  StepsSection,
+  CTASection,
+  Footer,
+} from "@/components/home/HomeSections";
 
 export default function HomePage() {
   return (
@@ -7,6 +15,8 @@ export default function HomePage() {
       <LandingHeader />
       <HeroSection />
       <FeaturesSection />
+      <TechSection />
+      <StepsSection />
       <CTASection />
       <Footer />
     </div>

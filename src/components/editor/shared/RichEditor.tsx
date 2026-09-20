@@ -196,7 +196,7 @@ export function RichEditor({
       return;
     }
     requestPolish(contextLabel, text);
-    toast.success("已交给 AI 助手润色，完成后会询问你是否应用");
+    toast.success("已交给智能小昊润色，完成后会询问你是否应用");
   };
 
   return (
@@ -242,7 +242,7 @@ export function RichEditor({
         <button
           type="button"
           onClick={runPolish}
-          title="将当前内容交给 AI 助手润色，确认后应用"
+          title="将当前内容交给智能小昊润色，确认后应用"
           className="ml-auto inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-primary transition-colors hover:bg-primary/10"
         >
           <Sparkles className="h-3.5 w-3.5" />

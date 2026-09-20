@@ -887,7 +887,7 @@ export function AIEditorPanel({
               <Bot className="h-4 w-4 text-primary-foreground" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-semibold text-foreground">AI 助手</div>
+              <div className="truncate text-[13px] font-semibold text-foreground">智能小昊</div>
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <span
                   className={cn(
