@@ -15,29 +15,23 @@ export function TipJarCard() {
       <div className="p-5 sm:p-6">
         <div className="flex flex-wrap gap-4">
           {/* 微信收款码 */}
-          <div className="group relative w-44 cursor-zoom-in overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
+          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
             <img
               src="/tip-wechat.jpg"
               alt="微信收款码"
               className="block h-auto w-full"
               onClick={() => setZoomed("/tip-wechat.jpg")}
             />
-            <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent px-2 pb-1.5 pt-4 text-center text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-              点击放大
-            </span>
           </div>
 
           {/* 支付宝收款码 */}
-          <div className="group relative w-44 cursor-zoom-in overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
+          <div className="group relative w-44 cursor-pointer overflow-hidden rounded-xl border border-border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:w-52">
             <img
               src="/tip-alipay.jpg"
               alt="支付宝收款码"
               className="block h-auto w-full"
               onClick={() => setZoomed("/tip-alipay.jpg")}
             />
-            <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent px-2 pb-1.5 pt-4 text-center text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-              点击放大
-            </span>
           </div>
         </div>
 
