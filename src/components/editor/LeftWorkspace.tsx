@@ -2,7 +2,7 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, FileText, LayoutTemplate, SlidersHorizontal } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
-import { TEMPLATES } from "@/config/templates";
+import { TEMPLATES, getTemplateById } from "@/config/templates";
 import { initialResumeState } from "@/config/initialResumeData";
 import { ResumeData } from "@/types/resume";
 import { SidePanel } from "./SidePanel";
@@ -83,7 +83,7 @@ const sampleResume: ResumeData = {
 function TemplatePanel() {
   const activeResume = useResumeStore((s) => s.activeResume);
   const setTemplate = useResumeStore((s) => s.setTemplate);
-  const currentTemplateId = activeResume?.templateId || "classic";
+  const currentTemplateId = getTemplateById(activeResume?.templateId).id;
 
   const COLS = 3;
   const [dir, setDir] = React.useState({ x: 0, y: 0 });

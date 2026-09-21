@@ -14,7 +14,7 @@ export default function MinimalistTemplate({ resume }: { resume: ResumeData }) {
 
   return (
     <div style={getContainerStyle(resume, DEFAULT_TEXT_COLOR)}>
-      <BaseInfoSection basic={basic} globalSettings={gs} />
+      <BaseInfoSection basic={basic} globalSettings={gs} layout="center" />
       <div style={{ display: "flex", flexDirection: "column", gap: `${gap}px`, marginTop: `${gap}px` }}>
         {enabled
           .filter((s) => s.id !== "basic")

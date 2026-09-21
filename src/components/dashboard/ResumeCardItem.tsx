@@ -2,6 +2,7 @@ import React from "react";
 import { FileText } from "lucide-react";
 import { ResumeData } from "@/types/resume";
 import { formatDateString } from "@/lib/utils";
+import { getTemplateById } from "@/config/templates";
 import { TemplateThumbnail } from "@/components/preview/TemplateThumbnail";
 
 // 简历卡片：预览图铺满，信息压在预览图底部（带渐变阴影）
@@ -47,7 +48,7 @@ export function ResumeCardItem({
     >
       {/* 预览图：真实渲染简历内容 */}
       <div className="overflow-hidden">
-        <TemplateThumbnail templateId={resume.templateId || "classic"} sampleResume={resume} />
+        <TemplateThumbnail templateId={getTemplateById(resume.templateId).id} sampleResume={resume} />
       </div>
 
       {/* 底部渐变阴影：托住信息文字，hover 时从下往上滑入 */}

@@ -1,6 +1,7 @@
 import React from "react";
 import { FileText, Pencil } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
+import { getTemplateById } from "@/config/templates";
 import { PagedResume } from "./PagedResume";
 
 export const PREVIEW_WIDTH_PX = 794; // 210mm @ 96dpi
@@ -14,7 +15,7 @@ const MAX_SCALE = 1.4; // 预览缩放上限：面板足够宽时 A4 纸最多�
 export function PreviewPanel() {
   const activeResume = useResumeStore((s) => s.activeResume);
   const updateResumeTitle = useResumeStore((s) => s.updateResumeTitle);
-  const templateId = activeResume?.templateId || "classic";
+  const templateId = getTemplateById(activeResume?.templateId).id;
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [titleInput, setTitleInput] = React.useState(activeResume?.title ?? "");
 

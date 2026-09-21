@@ -11,7 +11,7 @@ import {
   ResumeData,
   MenuSection,
 } from "@/types/resume";
-import { DEFAULT_TEMPLATES } from "@/config/templates";
+import { DEFAULT_TEMPLATES, templateToIndex } from "@/config/templates";
 import { initialResumeState } from "@/config/initialResumeData";
 import { STANDARD_MODULES } from "@/config/modules";
 import { generateUUID } from "@/lib/utils";
@@ -196,8 +196,8 @@ export const useResumeStore = create(
           id,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          templateId: template?.id,
-          title: `新建简历 ${id.slice(0, 6)}`,
+          templateId: template ? templateToIndex(template.id) : null,
+          title: `小昊简历 ${id.slice(0, 6)}`,
         };
 
         if (isBlank) {
@@ -227,10 +227,6 @@ export const useResumeStore = create(
             sectionSpacing: template.spacing.sectionGap,
             paragraphSpacing: template.spacing.itemGap,
             pagePadding: template.spacing.contentPadding,
-          };
-          newResume.basic = {
-            ...newResume.basic,
-            layout: template.basic.layout,
           };
         }
 
@@ -577,18 +573,16 @@ export const useResumeStore = create(
         const { activeResumeId, activeResume } = get();
         if (!activeResumeId || !activeResume) return;
         const template = DEFAULT_TEMPLATES.find((t) => t.id === templateId);
+        // 存储用模板序号（"0"~"N-1"），模板列表变动不会导致简历打不开
+        const nextTemplateId = template ? templateToIndex(template.id) : activeResume.templateId;
         get().updateResume(activeResumeId, {
-          templateId,
+          templateId: nextTemplateId,
           globalSettings: {
             ...activeResume.globalSettings,
             themeColor: template?.colorScheme.primary ?? activeResume.globalSettings.themeColor,
             sectionSpacing: template?.spacing.sectionGap ?? activeResume.globalSettings.sectionSpacing,
             paragraphSpacing: template?.spacing.itemGap ?? activeResume.globalSettings.paragraphSpacing,
             pagePadding: template?.spacing.contentPadding ?? activeResume.globalSettings.pagePadding,
-          },
-          basic: {
-            ...activeResume.basic,
-            layout: template?.basic.layout ?? activeResume.basic.layout,
           },
         });
       },
@@ -618,9 +612,9 @@ export const useResumeStore = create(
         activeResumeId: state.activeResumeId,
         firstRunCreated: state.firstRunCreated,
       }),
-      version: 7,
+      version: 8,
       migrate: (persistedState, version) => {
-        if (version >= 7) return persistedState as PersistedResumeStore;
+        if (version >= 8) return persistedState as PersistedResumeStore;
         // persist 实际结构为 { state: { resumes, activeResumeId }, version }，兼容直接存 resumes 的形态
         const raw = persistedState as unknown as {
           state?: { resumes?: Record<string, ResumeData> };
@@ -726,6 +720,11 @@ export const useResumeStore = create(
               (v): v is CustomFieldType => !!v && typeof v === "object"
             );
             r.basic.customFields = entries;
+          }
+          // v7 → v8：templateId 由模板 id（如 "classic"）迁移为模板序号（如 "0"），
+          // 模板列表增删不再导致简历打不开；已存序号的原样保留
+          if (r.templateId != null && r.templateId !== "") {
+            r.templateId = templateToIndex(r.templateId);
           }
         });
         return persistedState as PersistedResumeStore;

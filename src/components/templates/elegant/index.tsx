@@ -18,7 +18,7 @@ export default function ElegantTemplate({ resume }: { resume: ResumeData }) {
         fontFamily: gs.fontFamily || "Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif",
       }}
     >
-      <BaseInfoSection basic={basic} globalSettings={gs} />
+      <BaseInfoSection basic={basic} globalSettings={gs} layout="center" />
       <div style={{ display: "flex", flexDirection: "column", gap: `${gap}px`, marginTop: `${gap}px` }}>
         {enabled
           .filter((s) => s.id !== "basic")

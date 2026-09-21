@@ -185,6 +185,11 @@ a[aria-disabled="true"] {
   line-height: inherit;
   /* 保留连续空格（含 Tab），输入的空格在简历上原样显示 */
   white-space: pre-wrap;
+  /* 制表符显示为 4 格宽（pre-wrap 会保留 Tab 字符） */
+  tab-size: 4;
+  /* 连续数字/长英文串没有断点，需强制在容器边缘断开换行 */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .resume-rich ul,
 .resume-rich ol {
@@ -223,6 +228,11 @@ a[aria-disabled="true"] {
   outline: none;
   /* 输入的空格原样保留显示 */
   white-space: pre-wrap;
+  /* 制表符显示为 4 格宽，与简历渲染一致 */
+  tab-size: 4;
+  /* 长串数字/英文在编辑器内同样可断行，与简历渲染一致 */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .rich-editor .tiptap p {
   margin: 0 0 6px;

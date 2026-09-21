@@ -247,13 +247,14 @@ export function BaseInfoSection({
   basic,
   globalSettings,
   titleVariant,
+  layout = "left",
 }: {
   basic: BasicInfo;
   globalSettings: GlobalSettings;
   titleVariant?: SectionTitleVariant;
+  layout?: "left" | "center" | "right";
 }) {
   const useIconMode = globalSettings.useIconMode ?? false;
-  const layout = basic?.layout || "left";
   const themeColor = globalSettings.themeColor || "#000000";
 
   const getOrderedFields = React.useMemo(() => {
@@ -410,8 +411,14 @@ export function BaseInfoSection({
 }
 
 // ===== 富文本内容渲染 =====
+// 注意：.resume-rich 使用 white-space: pre-wrap（用户输入的空格原样显示），
+// 因此 HTML 源码里标签之间的换行/缩进（如 <ul>\n<li>）也会被当成真实换行渲染，
+// 导致板块行距异常变大。渲染前把标签间空白折叠掉（> < 之间仅空白 → ><），
+// 文本内容内部的空格不受影响。
+const normalizeRichHtml = (html: string): string => html.replace(/>\s+</g, "><");
+
 const renderRich = (html: string) => (
-  <div className="resume-rich" dangerouslySetInnerHTML={{ __html: html }} />
+  <div className="resume-rich" dangerouslySetInnerHTML={{ __html: normalizeRichHtml(html) }} />
 );
 
 // 兼容旧数据：纯文本（含换行）转成可渲染的 HTML；已是 HTML 则原样返回

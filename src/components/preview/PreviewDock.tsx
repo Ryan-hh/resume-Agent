@@ -59,6 +59,19 @@ export function PreviewDock({
 
   return (
     <div className="flex h-full shrink-0 flex-col items-center gap-1 border-r border-border bg-muted/30 p-1.5">
+      {/* 品牌 logo（与仪表盘侧边栏一致），点击返回仪表盘 */}
+      <Tooltip content="返回仪表盘" side="right">
+        <button
+          onClick={() => navigate("/")}
+          aria-label="返回仪表盘"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black transition-opacity hover:opacity-80 dark:bg-white"
+        >
+          <span className="text-base font-bold text-white dark:text-black">H</span>
+        </button>
+      </Tooltip>
+
+      <div className="my-1 h-px w-6 bg-border" />
+
       {/* 左侧操作区模式切换 */}
       <div className="flex flex-col items-center gap-1">
         {modeButtons.map((btn) => (
@@ -172,7 +185,7 @@ function DockButton({
   disabled?: boolean;
 }) {
   return (
-    <Tooltip content={tooltip} side="left">
+    <Tooltip content={tooltip} side="right">
       <button
         onClick={onClick}
         disabled={disabled}

@@ -11,7 +11,7 @@ export default function SwissTemplate({ resume }: { resume: ResumeData }) {
 
   return (
     <div style={getContainerStyle(resume, DEFAULT_TEXT_COLOR)}>
-      <BaseInfoSection basic={resume.basic} globalSettings={gs} />
+      <BaseInfoSection basic={resume.basic} globalSettings={gs} layout="left" />
       <div style={{ display: "flex", flexDirection: "column", gap: `${gap}px`, marginTop: `${gap}px` }}>
         {enabled
           .filter((s) => s.id !== "basic")

@@ -126,6 +126,29 @@ export const TEMPLATES: ResumeTemplate[] = [
 
 export const DEFAULT_TEMPLATES: ResumeTemplate[] = TEMPLATES;
 
-export function getTemplateById(id?: string | null): ResumeTemplate {
-  return TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
+// 模板引用解析：简历数据里以「模板序号」存储（"0"~"N-1"，见 templateToIndex）。
+// 模板列表未来可能增删——按序号解析时越界/无效统一回退到第一个模板，保证简历永远能打开；
+// 同时兼容旧数据里直接存模板 id（如 "classic"）的情况。
+export function getTemplateById(ref?: string | number | null): ResumeTemplate {
+  if (ref !== undefined && ref !== null && ref !== "") {
+    if (typeof ref === "number" && Number.isInteger(ref) && ref >= 0 && ref < TEMPLATES.length) {
+      return TEMPLATES[ref];
+    }
+    const str = String(ref).trim();
+    if (/^\d+$/.test(str)) {
+      const idx = Number(str);
+      if (idx >= 0 && idx < TEMPLATES.length) return TEMPLATES[idx];
+    }
+    const found = TEMPLATES.find((t) => t.id === str);
+    if (found) return found;
+  }
+  return TEMPLATES[0];
+}
+
+// 模板引用 → 存储序号（字符串，如 "0"）：写入简历数据前统一走这里。
+// 传模板 id（"classic"）或已有序号均可；找不到时回退 0（第一个模板）。
+export function templateToIndex(ref?: string | number | null): string {
+  const template = getTemplateById(ref);
+  const idx = TEMPLATES.indexOf(template);
+  return String(idx >= 0 ? idx : 0);
 }

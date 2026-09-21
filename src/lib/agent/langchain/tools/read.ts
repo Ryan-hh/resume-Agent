@@ -93,7 +93,7 @@ export function createReadTools(resumeId: string) {
         }
         lines.push(`技能：${resume.skillContent.split("\n").filter(Boolean).length} 条`);
         lines.push(`自定义板块：${Object.keys(resume.customData).length} 个`);
-        lines.push(`头部对齐：${resume.basic.layout ?? "left"}，图标模式：${resume.globalSettings.useIconMode ? "开" : "关"}`);
+        lines.push(`图标模式：${resume.globalSettings.useIconMode ? "开" : "关"}`);
         return lines.join("\n");
       },
       {

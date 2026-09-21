@@ -53,7 +53,7 @@ export default function SettingsPage() {
     // 开启成功后，把现有简历与 AI 配置立即全部写入备份文件夹
     const resumes = useResumeStore.getState().resumes;
     Object.values(resumes).forEach((resume) => {
-      saveResumeJson(resume.title, resume).catch(() => {});
+      saveResumeJson(resume.id, resume.title, resume).catch(() => {});
     });
     const aiConfig = useAIConfigStore.getState();
     saveAiConfigFile({ models: aiConfig.models, textModelId: aiConfig.textModelId }).catch(

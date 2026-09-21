@@ -25,8 +25,8 @@ export function PagedResume({
   const pagesRef = React.useRef<HTMLDivElement>(null);
   const [hostH, setHostH] = React.useState(PREVIEW_HEIGHT_PX);
 
-  // 仅当内容/模板变化时重建分页；缩放（--preview-scale）变化不在此列
-  React.useLayoutEffect(() => {
+  // 重建分页
+  const rebuildPages = React.useCallback(() => {
     const measure = measureRef.current;
     const target = pagesRef.current;
     if (!measure || !target) return;
@@ -45,9 +45,8 @@ export function PagedResume({
     const pages = paginateBlocks(blocks, pageContentH);
 
     target.innerHTML = "";
-    pages.forEach((page, i) => {
-      const keep = new Set(page);
-      const clone = clonePageRoot(root, keep);
+    pages.forEach((plan) => {
+      const clone = clonePageRoot(root, plan);
 
       const pageEl = document.createElement("div");
       pageEl.style.cssText = [
@@ -61,14 +60,35 @@ export function PagedResume({
       target.appendChild(pageEl);
     });
 
-    // 测量未缩放的真实布局高度，用于宿主占位。
-    // 不能用 getBoundingClientRect()：页面通过 transform: scale() 缩放，其返回的是
-    // 受 transform 影响的视觉高度（scale<1 时被压缩），会导致宿主高度二次缩小、
-    // overflow:hidden 裁掉页面底部（首次加载 scale 尚为 1 时正常，AI/编辑触发
-    // 分页重建时 scale 已生效，预览随即截断）。offsetHeight 是布局高度，不受 transform 影响。
     const h = target.offsetHeight || PREVIEW_HEIGHT_PX;
     setHostH(h);
-  }, [resume, templateId]);
+  }, []);
+
+  // 仅当内容/模板变化时重建分页
+  React.useLayoutEffect(() => {
+    rebuildPages();
+
+    // 等待字体和图片加载完成后重新测量，避免首次加载高度不准导致空行
+    const timers: number[] = [];
+    if (document.fonts) {
+      document.fonts.ready.then(() => rebuildPages());
+    }
+    // 延迟二次测量，确保图片加载完成
+    timers.push(window.setTimeout(rebuildPages, 100));
+    timers.push(window.setTimeout(rebuildPages, 300));
+
+    // 监听图片加载
+    const imgs = measureRef.current?.querySelectorAll("img");
+    imgs?.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener("load", rebuildPages, { once: true });
+      }
+    });
+
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [resume, templateId, rebuildPages]);
 
   return (
     <>

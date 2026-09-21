@@ -103,7 +103,7 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex h-9 w-full items-center justify-between gap-2 rounded-none border bg-transparent px-3 py-1 text-left text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-9 w-full items-center justify-between gap-2 rounded-none border bg-transparent px-3 py-1 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           open ? "border-primary/60 ring-1 ring-primary/20" : "border-input hover:border-input"
         )}
       >

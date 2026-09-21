@@ -1,8 +1,5 @@
 import React from "react";
 import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
   Upload,
   X,
   Plus,
@@ -210,7 +207,7 @@ export function BasicPanel() {
                 年龄
               </span>
             </Label>
-            <div className="flex h-9 items-center justify-between gap-2 rounded-md border border-input px-3">
+            <div className="flex h-9 items-center justify-between gap-2 rounded-none border border-input px-3">
               <span className="truncate text-sm text-muted-foreground">显示年龄</span>
               <Switch
                 checked={!!basic.showAge}
@@ -254,33 +251,6 @@ export function BasicPanel() {
               placeholder="如 湖北省省武汉市"
             />
           </Field>
-        </div>
-
-        {/* 顶部对齐：控制姓名/职位/信息字段的整体对齐 */}
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-none bg-muted/50 px-3 py-2">
-          <span className="text-xs text-muted-foreground">顶部对齐</span>
-          <div className="flex items-center gap-1">
-            {[
-              { value: "left" as const, label: "靠左", icon: AlignLeft },
-              { value: "center" as const, label: "居中", icon: AlignCenter },
-              { value: "right" as const, label: "靠右", icon: AlignRight },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => updateBasicInfo({ layout: opt.value })}
-                className={cn(
-                  "flex items-center gap-1 rounded-none border px-2 py-1 text-[11px] transition-colors",
-                  (basic.layout || "left") === opt.value
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
-              >
-                <opt.icon className="h-3 w-3" />
-                {opt.label}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -401,12 +371,16 @@ function CustomIconPicker({
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
+  const [placement, setPlacement] = React.useState<"bottom" | "top">("bottom");
+
   const openPicker = () => {
     const rect = btnRef.current?.getBoundingClientRect();
     if (rect) {
-      setPos({ top: rect.bottom + 6, left: rect.left, width: 216 });
+      const popoverHeight = 90;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setPlacement(spaceBelow < popoverHeight + 8 ? "top" : "bottom");
     }
-    setOpen(true);
+    setOpen(!open);
   };
 
   return (
@@ -420,10 +394,13 @@ function CustomIconPicker({
       >
         <Current className="h-4 w-4" />
       </button>
-      {open && pos && (
+      {open && (
         <div
-          className="fixed z-[120] grid grid-cols-5 gap-1 rounded-none border border-border bg-popover p-2 shadow-xl"
-          style={{ top: pos.top, left: pos.left, width: pos.width }}
+          className={cn(
+            "absolute left-0 z-[120] grid grid-cols-5 gap-1 rounded-none border border-border bg-popover p-2 shadow-xl",
+            placement === "bottom" ? "top-full mt-0.5" : "bottom-full mb-0.5"
+          )}
+          style={{ width: 216 }}
         >
           {CUSTOM_ICON_OPTIONS.map((opt) => (
             <button

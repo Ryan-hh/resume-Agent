@@ -101,7 +101,7 @@ export function MonthPicker({
       <div
         ref={triggerRef}
         className={cn(
-          "flex h-9 w-full items-center rounded-none border bg-transparent shadow-sm transition-colors",
+          "flex h-9 w-full items-center rounded-none border bg-transparent transition-colors",
           open ? "border-primary/60 ring-1 ring-primary/20" : "border-input hover:border-input"
         )}
       >

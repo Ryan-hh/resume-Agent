@@ -51,7 +51,6 @@ export interface BasicInfo {
   photoConfig: PhotoConfig;
   fieldOrder?: BasicFieldType[];
   customFields: CustomFieldType[];
-  layout?: "left" | "center" | "right";
   // 个人信息扩展字段（固定顺序展示）
   gender?: string; // 性别：男 / 女
   jobIntention?: string; // 求职意向（目标岗位）
@@ -146,7 +145,7 @@ export interface ResumeData {
   title: string;
   createdAt: string;
   updatedAt: string;
-  templateId: string | null | undefined;
+  templateId: string | null | undefined; // 模板序号（"0"~"N-1"，读取用 getTemplateById 解析；旧数据可能为模板 id）
   basic: BasicInfo;
   education: Education[];
   experience: Experience[];

@@ -51,7 +51,7 @@ export function SettingsPanel() {
     toast.success("备份目录已配置");
     const resumes = useResumeStore.getState().resumes;
     Object.values(resumes).forEach((resume) => {
-      saveResumeJson(resume.title, resume).catch(() => {});
+      saveResumeJson(resume.id, resume.title, resume).catch(() => {});
     });
     const aiConfig = useAIConfigStore.getState();
     saveAiConfigFile({ models: aiConfig.models, textModelId: aiConfig.textModelId }).catch(

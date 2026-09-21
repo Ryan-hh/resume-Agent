@@ -8,8 +8,6 @@ import {
   Bold,
   List,
   ListOrdered,
-  IndentIncrease,
-  IndentDecrease,
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -53,9 +51,26 @@ const IndentListItem = ListItem.extend({
 });
 
 // 段落缩进扩展：替换内置 paragraph（保持同名 "paragraph"，StarterKit 侧已禁用其自带段落），
-// 为段落增加缩进属性（data-indent + padding-left），Tab/Shift-Tab 或工具栏按钮触发。
-// 同时处理列表项（margin-left）：列表缩进时项目符号/序号跟随移动
+// 为段落增加缩进属性（data-indent + text-indent 首行缩进），Tab/Shift-Tab 或工具栏按钮触发。
+// 用 text-indent 而非 padding-left：段落自动换行时只有第一行缩进，后续行顶格（符合中文首行缩进习惯）。
+// 列表项（listItem）走 margin-left，缩进时项目符号/序号跟随移动
 const IndentParagraph = Paragraph.extend({
+  addAttributes() {
+    return {
+      indent: {
+        default: 0,
+        parseHTML: (element) => Number(element.getAttribute("data-indent")) || 0,
+        renderHTML: (attributes) => {
+          const indent = (attributes.indent as number) || 0;
+          if (indent <= 0) return {};
+          return {
+            "data-indent": String(indent),
+            style: `text-indent:${indent * INDENT_STEP_PX}px`,
+          };
+        },
+      },
+    };
+  },
   addCommands() {
     return {
       updateParagraphIndent:
@@ -111,7 +126,9 @@ const IndentParagraph = Paragraph.extend({
   },
   addKeyboardShortcuts() {
     return {
-      Tab: () => this.editor.commands.updateParagraphIndent(1),
+      // Tab：插入制表符（文本内容，pre-wrap 下原样显示），而不是焦点跳转
+      Tab: () => this.editor.chain().focus().insertContent("\t").run(),
+      // Shift-Tab：保持"减少缩进"（工具栏按钮也可用）
       "Shift-Tab": () => this.editor.commands.updateParagraphIndent(-1),
     };
   },
@@ -223,20 +240,6 @@ export function RichEditor({
           title="有序列表"
         >
           <ListOrdered className="h-3.5 w-3.5" />
-        </ToolButton>
-        <ToolButton
-          active={false}
-          onClick={() => editor.chain().focus().updateParagraphIndent(1).run()}
-          title="增加缩进（向右）"
-        >
-          <IndentIncrease className="h-3.5 w-3.5" />
-        </ToolButton>
-        <ToolButton
-          active={false}
-          onClick={() => editor.chain().focus().updateParagraphIndent(-1).run()}
-          title="减少缩进（向左）"
-        >
-          <IndentDecrease className="h-3.5 w-3.5" />
         </ToolButton>
         {/* AI 润色：工具栏右侧，交给 AI 助手处理 */}
         <button
