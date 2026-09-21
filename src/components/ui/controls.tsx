@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -77,20 +78,40 @@ interface SelectProps {
 
 export function Select({ options, value, onChange, placeholder = "请选择", className, disabled }: SelectProps) {
   const [open, setOpen] = React.useState(false);
+  const [pos, setPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
   const ref = React.useRef<HTMLDivElement>(null);
+  const popupRef = React.useRef<HTMLDivElement>(null);
+
+  // 打开时按按钮的实际位置计算 fixed 坐标，并挂到 body —— 避免被父容器 overflow 裁切/遮挡
+  const openList = () => {
+    const node = ref.current;
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    setPos({ top: r.bottom + 6, left: r.left, width: r.width });
+    setOpen(true);
+  };
 
   React.useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      const inPopup = !!popupRef.current && popupRef.current.contains(t);
+      if (ref.current && !ref.current.contains(t) && !inPopup) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    // 任何滚动/缩放变化都关闭下拉，避免 fixed 位置错位
+    const onScroll = () => setOpen(false);
+    const onResize = () => setOpen(false);
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
@@ -101,7 +122,7 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? setOpen(false) : openList())}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-none border bg-transparent px-3 py-1 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           open ? "border-primary/60 ring-1 ring-primary/20" : "border-input hover:border-input"
@@ -117,28 +138,35 @@ export function Select({ options, value, onChange, placeholder = "请选择", cl
           )}
         />
       </button>
-      {open && (
-        <div className="absolute left-0 right-0 z-[90] mt-1.5 overflow-hidden rounded-none border border-border bg-popover p-1 shadow-lg">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange?.(opt.value);
-                setOpen(false);
-              }}
-              className={cn(
-                "flex w-full items-center rounded-none px-2.5 py-1.5 text-left text-sm transition-colors",
-                opt.value === value
-                  ? "bg-primary/10 font-medium text-primary"
-                  : "text-foreground hover:bg-accent"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {open &&
+        pos &&
+        ReactDOM.createPortal(
+          <div
+            ref={popupRef}
+            style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
+            className="overflow-hidden rounded-none border border-border bg-popover p-1 shadow-lg"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange?.(opt.value);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center rounded-none px-2.5 py-1.5 text-left text-sm transition-colors",
+                  opt.value === value
+                    ? "bg-primary/10 font-medium text-primary"
+                    : "text-foreground hover:bg-accent"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

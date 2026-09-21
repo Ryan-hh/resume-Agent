@@ -80,7 +80,7 @@ interface ResumeStore {
   future: Record<string, ResumeData[]>;
   firstRunCreated: boolean;
 
-  createResume: (templateId?: string | null, isBlank?: boolean) => string;
+  createResume: (templateId?: string | null, isBlank?: boolean, options?: { themeColor?: string }) => string;
   deleteResume: (resume: ResumeData) => void;
   duplicateResume: (resumeId: string) => string;
   updateResume: (resumeId: string, data: Partial<ResumeData>, options?: UpdateResumeOptions) => void;
@@ -185,7 +185,7 @@ export const useResumeStore = create(
       future: {},
       firstRunCreated: false,
 
-      createResume: (templateId = null, isBlank = false) => {
+      createResume: (templateId = null, isBlank = false, options?: { themeColor?: string }) => {
         const id = generateUUID();
         const template = templateId
           ? DEFAULT_TEMPLATES.find((t) => t.id === templateId)
@@ -223,7 +223,8 @@ export const useResumeStore = create(
         } else if (template) {
           newResume.globalSettings = {
             ...newResume.globalSettings,
-            themeColor: template.colorScheme.primary,
+            // 颜色统一管理：新建简历默认使用初始主题色（黑色），除非调用方显式指定
+            themeColor: options?.themeColor ?? newResume.globalSettings.themeColor,
             sectionSpacing: template.spacing.sectionGap,
             paragraphSpacing: template.spacing.itemGap,
             pagePadding: template.spacing.contentPadding,
@@ -578,8 +579,8 @@ export const useResumeStore = create(
         get().updateResume(activeResumeId, {
           templateId: nextTemplateId,
           globalSettings: {
+            // 颜色统一管理：切换模板只换布局/标题样式，主题色保持当前简历的颜色（默认黑色）
             ...activeResume.globalSettings,
-            themeColor: template?.colorScheme.primary ?? activeResume.globalSettings.themeColor,
             sectionSpacing: template?.spacing.sectionGap ?? activeResume.globalSettings.sectionSpacing,
             paragraphSpacing: template?.spacing.itemGap ?? activeResume.globalSettings.paragraphSpacing,
             pagePadding: template?.spacing.contentPadding ?? activeResume.globalSettings.pagePadding,

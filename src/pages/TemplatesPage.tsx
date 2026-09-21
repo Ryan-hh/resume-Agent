@@ -16,7 +16,7 @@ const sampleResumeBase: ResumeData = {
   id: "sample",
   createdAt: "",
   updatedAt: "",
-  templateId: "classic",
+  templateId: TEMPLATES[0].id,
 };
 
 const CATEGORIES: (TemplateCategory | "all")[] = ["all", "single"];
@@ -31,7 +31,6 @@ export default function TemplatesPage() {
   const navigate = useNavigate();
   const createResume = useResumeStore((s) => s.createResume);
   const [category, setCategory] = React.useState<TemplateCategory | "all">("all");
-
 
   // 主题色轮播：每隔一段时间自动切换一个预设色，模板预览同步变色
   const [themeIndex, setThemeIndex] = React.useState(0);
@@ -56,12 +55,11 @@ export default function TemplatesPage() {
   const filtered =
     category === "all" ? TEMPLATES : TEMPLATES.filter((item) => item.category === category);
 
+  // 模板库缩略图颜色仅作轮播展示；新建简历统一使用默认主题色（黑色）
   const handleUse = (templateId: string) => {
     const newId = createResume(templateId);
     navigate(`/workbench/${newId}`);
   };
-
-
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 lg:p-8">
@@ -110,7 +108,7 @@ export default function TemplatesPage() {
           );
         })}
 
-        {/* 预设主题色：自动轮播，模板预览跟随变色 */}
+        {/* 预设主题色：自动轮播，模板预览跟随变色；「使用此模板」会以当前颜色创建简历 */}
         <div className="ml-auto flex items-center gap-2.5 rounded-none border border-border bg-background px-3 py-1.5">
           <span className="text-xs text-muted-foreground">主题</span>
           <div className="flex items-center gap-1.5">

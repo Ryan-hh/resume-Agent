@@ -10,6 +10,18 @@ import {
 } from "@/types/resume";
 import { formatDateRange, formatDateString } from "@/lib/utils";
 
+// hex 主题色 → 带透明度的 rgba（支持 #RGB / #RRGGBB；已是 rgba 或其他格式原样返回）
+const withAlpha = (hex: string, alpha: number): string => {
+  const m = hex.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!m) return hex;
+  let h = m[1];
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 // 条目内容判空：任何字段有值即视为已填写（避免空白条目在简历上多占一行）
 const hasExperienceContent = (e: Experience): boolean =>
   !!(
@@ -112,46 +124,57 @@ export function SectionTitle({
     color: "inherit",
   };
 
+  // 所有变体统一标题内容区高度（随字号自适应），各样式在固定高度内垂直居中 → 8 套模板小标题视觉高度一致
+  const HEADER_H = Math.round(headerSize * 1.5 + 6);
+  const rowBase: React.CSSProperties = {
+    height: `${HEADER_H}px`,
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "12px",
+  };
+
   switch (variant) {
     case "center":
       return (
-        <h3 style={{ ...common, textAlign: "center", marginBottom: "12px" }}>{title}</h3>
+        <div style={{ ...rowBase, justifyContent: "center" }}>
+          <h3 style={{ ...common, textAlign: "center", margin: 0 }}>{title}</h3>
+        </div>
       );
     case "line":
       return (
-        <div style={{ marginBottom: "12px" }}>
-          <h3 style={{ ...common, display: "inline-block", borderBottom: `2px solid ${themeColor}`, paddingBottom: "4px" }}>
+        <div style={rowBase}>
+          <h3 style={{ ...common, display: "inline-block", borderBottom: `2px solid ${themeColor}`, paddingBottom: "4px", margin: 0 }}>
             {title}
           </h3>
         </div>
       );
     case "bold":
       return (
-        <div style={{ marginBottom: "12px" }}>
-          <h3 style={{ ...common, fontSize: `${Math.max(headerSize, 20)}px`, letterSpacing: "0.02em" }}>{title}</h3>
+        <div style={{ ...rowBase, flexDirection: "column", justifyContent: "center" }}>
+          <h3 style={{ ...common, fontSize: `${Math.max(headerSize, 20)}px`, letterSpacing: "0.02em", margin: 0, lineHeight: 1.2 }}>{title}</h3>
           <div style={{ width: "100%", height: "3px", background: themeColor, marginTop: "6px" }} />
         </div>
       );
     case "elegant":
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+        <div style={{ ...rowBase, gap: "12px" }}>
           <div style={{ flex: 1, height: "1px", background: themeColor, opacity: 0.4 }} />
-          <h3 style={{ ...common, whiteSpace: "nowrap" }}>{title}</h3>
+          <h3 style={{ ...common, whiteSpace: "nowrap", margin: 0 }}>{title}</h3>
           <div style={{ flex: 1, height: "1px", background: themeColor, opacity: 0.4 }} />
         </div>
       );
     case "icon":
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+        <div style={{ ...rowBase, gap: "8px" }}>
           {renderIcon(icon, headerSize, themeColor)}
-          <h3 style={{ ...common }}>{title}</h3>
+          <h3 style={{ ...common, margin: 0 }}>{title}</h3>
           <div style={{ flex: 1, height: "1px", background: themeColor, opacity: 0.25 }} />
         </div>
       );
     case "chip":
       // 蓝点风格：实心圆底白图标 + 彩色加粗标题 + 标题右侧延伸同色细线
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+        <div style={{ ...rowBase, gap: "10px" }}>
           <span
             style={{
               width: `${Math.round(headerSize + 8)}px`,
@@ -166,31 +189,40 @@ export function SectionTitle({
           >
             {renderIcon(icon, Math.round((headerSize + 8) * 0.55), "#ffffff")}
           </span>
-          <h3 style={{ ...common, color: themeColor, whiteSpace: "nowrap" }}>{title}</h3>
+          <h3 style={{ ...common, color: themeColor, whiteSpace: "nowrap", margin: 0 }}>{title}</h3>
           <div style={{ flex: 1, height: "2px", background: themeColor, opacity: 0.3 }} />
         </div>
       );
     case "editorial":
       return (
-        <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "12px" }}>
+        <div style={{ ...rowBase, gap: "10px" }}>
           <span style={{ ...common, color: themeColor, fontFamily: "Georgia, serif" }}>{String(title).slice(0, 1)}</span>
-          <h3 style={{ ...common, textTransform: "uppercase", letterSpacing: "0.06em" }}>{title}</h3>
+          <h3 style={{ ...common, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>{title}</h3>
         </div>
       );
     case "solid-label":
       // 实心色块标签 + 白字（直角方块）
       return (
-        <div style={{ marginBottom: "12px" }}>
-          <h3 style={{ ...common, display: "inline-block", background: themeColor, color: "#ffffff", padding: "3px 10px", lineHeight: 1.3 }}>
+        <div style={rowBase}>
+          <h3 style={{ ...common, display: "inline-block", background: themeColor, color: "#ffffff", padding: "3px 10px", lineHeight: 1.3, margin: 0 }}>
             {title}
           </h3>
         </div>
       );
     case "gray-band":
-      // 整行浅灰背景条 + 深色标题
+      // 整行主题色浅背景条（跟随主题色 + 12% 透明度）+ 深色标题，占满统一高度
       return (
-        <div style={{ marginBottom: "12px" }}>
-          <div style={{ background: "#F6F8FA", padding: "8px 12px" }}>
+        <div style={rowBase}>
+          <div
+            style={{
+              height: "100%",
+              width: "100%",
+              background: withAlpha(themeColor, 0.12),
+              display: "flex",
+              alignItems: "center",
+              padding: "0 12px",
+            }}
+          >
             <h3 style={{ ...common, color: "#1A1A1A", margin: 0 }}>{title}</h3>
           </div>
         </div>
@@ -198,16 +230,16 @@ export function SectionTitle({
     case "rule":
       // 深色粗体标题 + 整行主题色细线
       return (
-        <div style={{ marginBottom: "12px" }}>
-          <h3 style={{ ...common, color: "#1A1A1A", margin: 0 }}>{title}</h3>
+        <div style={{ ...rowBase, flexDirection: "column", justifyContent: "center" }}>
+          <h3 style={{ ...common, color: "#1A1A1A", margin: 0, lineHeight: 1.2 }}>{title}</h3>
           <div style={{ width: "100%", height: "2px", background: themeColor, marginTop: "6px" }} />
         </div>
       );
     default:
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+        <div style={{ ...rowBase, gap: "10px" }}>
           <span style={{ width: "4px", height: `${headerSize}px`, background: themeColor, borderRadius: "2px" }} />
-          <h3 style={{ ...common }}>{title}</h3>
+          <h3 style={{ ...common, margin: 0 }}>{title}</h3>
         </div>
       );
   }
@@ -255,7 +287,6 @@ export function BaseInfoSection({
   layout?: "left" | "center" | "right";
 }) {
   const useIconMode = globalSettings.useIconMode ?? false;
-  const themeColor = globalSettings.themeColor || "#000000";
 
   const getOrderedFields = React.useMemo(() => {
     return BASIC_FIELDS.map((field) => {
@@ -334,76 +365,90 @@ export function BaseInfoSection({
     </div>
   );
 
+  // 头部布局：信息区（名字/职称/基本信息）+ 头像
+  //  - left：头像在左，信息在右
+  //  - right：头像在右，信息在左（默认，所有模板当前均用此布局）
+  //  - center：纵向居中，头像在名字上方
   const layoutStyles = {
     left: {
-      container: { display: "flex", flexDirection: "row" as const, alignItems: "center", justifyContent: "space-between", gap: "24px" },
-      leftContent: { display: "flex", flexDirection: "row" as const, alignItems: "center", gap: "24px", flexShrink: 0, minWidth: 0, maxWidth: "42%" },
-      fields: { display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: "8px 24px", justifyItems: "start" },
+      container: { display: "flex", flexDirection: "row" as const, alignItems: "center", justifyContent: "space-between", gap: "28px" },
+      infoBlock: { display: "flex", flexDirection: "column" as const, alignItems: "flex-start", flex: 1, minWidth: 0 },
+      fields: { display: "flex", flexWrap: "wrap" as const, justifyContent: "flex-start", gap: "7px 18px", marginTop: "10px" },
     },
     right: {
-      container: { display: "flex", flexDirection: "row-reverse" as const, alignItems: "center", justifyContent: "space-between", gap: "24px" },
-      leftContent: { display: "flex", flexDirection: "row-reverse" as const, alignItems: "center", gap: "24px", flexShrink: 0, minWidth: 0, maxWidth: "42%" },
-      fields: { display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: "8px 24px", justifyItems: "end", textAlign: "right" as const },
+      container: { display: "flex", flexDirection: "row" as const, alignItems: "center", justifyContent: "space-between", gap: "28px" },
+      infoBlock: { display: "flex", flexDirection: "column" as const, alignItems: "flex-start", flex: 1, minWidth: 0 },
+      fields: { display: "flex", flexWrap: "wrap" as const, justifyContent: "flex-start", gap: "7px 18px", marginTop: "10px" },
     },
     center: {
-      container: { display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "12px" },
-      leftContent: { display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "16px" },
-      fields: { display: "flex", flexWrap: "wrap" as const, justifyContent: "center", gap: "12px" },
+      container: { display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "14px" },
+      infoBlock: { display: "flex", flexDirection: "column" as const, alignItems: "center", width: "100%", minWidth: 0 },
+      fields: { display: "flex", flexWrap: "wrap" as const, justifyContent: "center", gap: "7px 18px", marginTop: "10px" },
     },
   };
 
-  const styles = layoutStyles[layout] || layoutStyles.left;
+  const styles = layoutStyles[layout] || layoutStyles.right;
   const baseFont = globalSettings.baseFontSize || 14;
   const nameSize = Math.max(28, baseFont + 14);
+  const fieldIconSize = baseFont + 1;
+
+  // 字段项：图标模式为 [icon]+值，文本模式为 标签: 值（均为中性色，不随主题色变化）
+  const renderField = (item: (typeof allFields)[number]) => (
+    <div key={item.key} style={{ display: "flex", alignItems: "center", gap: "5px", minWidth: 0 }}>
+      {useIconMode ? (
+        <>
+          {renderIcon(item.icon, fieldIconSize)}
+          {item.key === "email" ? (
+            <a href={`mailto:${item.value}`} style={{ minWidth: 0, overflowWrap: "anywhere", color: "inherit" }}>{item.value}</a>
+          ) : (
+            <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{item.value}</span>
+          )}
+        </>
+      ) : (
+        <>
+          <span style={{ flexShrink: 0, fontWeight: 500 }}>{item.label}:</span>
+          {item.key === "email" ? (
+            <a href={`mailto:${item.value}`} style={{ minWidth: 0, overflowWrap: "anywhere", color: "inherit" }}>{item.value}</a>
+          ) : (
+            <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{item.value}</span>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   return (
     <SectionWrapper sectionId="basic">
       <PageBlock col={0}>
         <div style={styles.container}>
-          <div style={styles.leftContent}>
-            {PhotoComponent}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: layout === "center" ? "center" : layout === "right" ? "flex-end" : "flex-start" }}>
-              {name && (
-                <h1 style={{ fontWeight: 700, fontSize: `${nameSize}px`, margin: 0, lineHeight: 1.2, wordBreak: "break-word" }}>
-                  {name}
-                </h1>
-              )}
-              {title && (
-                <h2
-                  style={{
-                    fontSize: `${globalSettings.subheaderSize || 16}px`,
-                    margin: "4px 0 0 0",
-                    fontWeight: 500,
-                    color: themeColor,
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {title}
-                </h2>
-              )}
-            </div>
-          </div>
-          <div style={{ ...styles.fields, fontSize: `${baseFont}px`, color: "#4b5563", maxWidth: layout === "center" ? "none" : "600px" }}>
-            {allFields.map((item) => (
-              <div key={item.key} style={{ display: "flex", minWidth: 0, alignItems: "flex-start" }}>
-                {useIconMode ? (
-                  <div style={{ display: "flex", minWidth: 0, alignItems: "flex-start", gap: "4px" }}>
-                    {renderIcon(item.icon, baseFont + 2)}
-                    {item.key === "email" ? (
-                      <a href={`mailto:${item.value}`} style={{ minWidth: 0, overflowWrap: "anywhere", color: "inherit" }}>{item.value}</a>
-                    ) : (
-                      <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{item.value}</span>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", minWidth: 0, alignItems: "flex-start", gap: "8px" }}>
-                    <span style={{ flexShrink: 0 }}>{item.label}:</span>
-                    <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>{item.value}</span>
-                  </div>
-                )}
+          {layout === "left" && PhotoComponent}
+          <div style={styles.infoBlock}>
+            {layout === "center" && PhotoComponent}
+            {name && (
+              <h1 style={{ fontWeight: 700, fontSize: `${nameSize}px`, margin: 0, lineHeight: 1.2, wordBreak: "break-word" }}>
+                {name}
+              </h1>
+            )}
+            {title && (
+              <h2
+                style={{
+                  fontSize: `${globalSettings.subheaderSize || 16}px`,
+                  margin: "4px 0 0 0",
+                  fontWeight: 500,
+                  color: "#4b5563",
+                  wordBreak: "break-word",
+                }}
+              >
+                {title}
+              </h2>
+            )}
+            {allFields.length > 0 && (
+              <div style={{ ...styles.fields, fontSize: `${baseFont}px`, color: "#4b5563" }}>
+                {allFields.map(renderField)}
               </div>
-            ))}
+            )}
           </div>
+          {layout === "right" && PhotoComponent}
         </div>
       </PageBlock>
     </SectionWrapper>
@@ -449,7 +494,6 @@ export function ExperienceSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  const themeColor = globalSettings.themeColor || "#000000";
   const items = experiences.filter((e) => e.visible !== false && hasExperienceContent(e));
   return (
     <SectionWrapper sectionId="experience" style={style}>
@@ -459,12 +503,11 @@ export function ExperienceSection({
       <div style={{ display: "flex", flexDirection: "column", gap: `${globalSettings.paragraphSpacing || 12}px` }}>
         {items.map((item) => (
           <PageBlock col={0} key={item.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap", minWidth: 0 }}>
-                <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px` }}>{item.company}</span>
-                <span style={{ fontWeight: 500, fontSize: `${baseFont}px`, color: themeColor }}>{item.position}</span>
-              </div>
-              <span style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280", whiteSpace: "nowrap" }}>
+            {/* 三栏：公司靠左 / 职位居中 / 日期靠右，全部黑色 */}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,auto) 1fr auto", alignItems: "baseline", gap: "12px" }}>
+              <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px`, color: "#000000", wordBreak: "break-word" }}>{item.company}</span>
+              <span style={{ textAlign: "center", fontWeight: 500, fontSize: `${baseFont}px`, color: "#000000", minWidth: 0 }}>{item.position}</span>
+              <span style={{ fontSize: `${baseFont - 1}px`, color: "#000000", whiteSpace: "nowrap" }}>
                 {formatDateRange(item.startDate, item.endDate, item.isPresent)}
               </span>
             </div>
@@ -504,13 +547,14 @@ export function EducationSection({
       <div style={{ display: "flex", flexDirection: "column", gap: `${globalSettings.paragraphSpacing || 12}px` }}>
         {items.map((item) => (
           <PageBlock col={0} key={item.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap", minWidth: 0 }}>
-                <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px` }}>{item.school}</span>
-                {item.major && <span style={{ fontSize: `${baseFont}px` }}>{item.major}</span>}
-                {item.degree && <span style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280" }}>{item.degree}</span>}
-              </div>
-              <span style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280", whiteSpace: "nowrap" }}>
+            {/* 三栏：名称靠左 / 专业（学历）居中 / 日期靠右，全部黑色 */}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,auto) 1fr auto", alignItems: "baseline", gap: "12px" }}>
+              <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px`, color: "#000000", wordBreak: "break-word" }}>{item.school}</span>
+              <span style={{ textAlign: "center", fontSize: `${baseFont}px`, color: "#000000", minWidth: 0 }}>
+                {item.major}
+                {item.degree ? <span>（{item.degree}）</span> : null}
+              </span>
+              <span style={{ fontSize: `${baseFont - 1}px`, color: "#000000", whiteSpace: "nowrap" }}>
                 {[item.startDate, item.endDate].filter(Boolean).join(" - ")}
               </span>
             </div>
@@ -541,7 +585,6 @@ export function ProjectSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  const themeColor = globalSettings.themeColor || "#000000";
   const items = projects.filter((p) => p.visible !== false && hasProjectContent(p));
   return (
     <SectionWrapper sectionId="projects" style={style}>
@@ -551,12 +594,11 @@ export function ProjectSection({
       <div style={{ display: "flex", flexDirection: "column", gap: `${globalSettings.paragraphSpacing || 12}px` }}>
         {items.map((item) => (
           <PageBlock col={0} key={item.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap", minWidth: 0 }}>
-                <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px` }}>{item.name}</span>
-                {item.role && <span style={{ fontWeight: 500, fontSize: `${baseFont}px`, color: themeColor }}>{item.role}</span>}
-              </div>
-              <span style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280", whiteSpace: "nowrap" }}>
+            {/* 三栏：项目名靠左 / 角色居中 / 日期靠右，全部黑色 */}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,auto) 1fr auto", alignItems: "baseline", gap: "12px" }}>
+              <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px`, color: "#000000", wordBreak: "break-word" }}>{item.name}</span>
+              {item.role && <span style={{ textAlign: "center", fontWeight: 500, fontSize: `${baseFont}px`, color: "#000000", minWidth: 0 }}>{item.role}</span>}
+              <span style={{ fontSize: `${baseFont - 1}px`, color: "#000000", whiteSpace: "nowrap" }}>
                 {formatDateRange(item.startDate, item.endDate, item.isPresent)}
               </span>
             </div>
@@ -715,7 +757,6 @@ export function InternshipSection({
   style?: React.CSSProperties;
 }) {
   const baseFont = globalSettings.baseFontSize || 14;
-  const themeColor = globalSettings.themeColor || "#000000";
   const items = internships.filter((e) => e.visible !== false && hasExperienceContent(e));
   return (
     <SectionWrapper sectionId="internship" style={style}>
@@ -725,12 +766,11 @@ export function InternshipSection({
       <div style={{ display: "flex", flexDirection: "column", gap: `${globalSettings.paragraphSpacing || 12}px` }}>
         {items.map((item) => (
           <PageBlock col={0} key={item.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap", minWidth: 0 }}>
-                <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px` }}>{item.company}</span>
-                <span style={{ fontWeight: 500, fontSize: `${baseFont}px`, color: themeColor }}>{item.position}</span>
-              </div>
-              <span style={{ fontSize: `${baseFont - 1}px`, color: "#6b7280", whiteSpace: "nowrap" }}>
+            {/* 三栏：公司靠左 / 职位居中 / 日期靠右，全部黑色 */}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,auto) 1fr auto", alignItems: "baseline", gap: "12px" }}>
+              <span style={{ fontWeight: 700, fontSize: `${baseFont + 1}px`, color: "#000000", wordBreak: "break-word" }}>{item.company}</span>
+              <span style={{ textAlign: "center", fontWeight: 500, fontSize: `${baseFont}px`, color: "#000000", minWidth: 0 }}>{item.position}</span>
+              <span style={{ fontSize: `${baseFont - 1}px`, color: "#000000", whiteSpace: "nowrap" }}>
                 {formatDateRange(item.startDate, item.endDate, item.isPresent)}
               </span>
             </div>

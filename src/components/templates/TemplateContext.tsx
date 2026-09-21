@@ -1,4 +1,5 @@
 import React from "react";
+import { TEMPLATES } from "@/config/templates";
 
 interface TemplateContextValue {
   templateId: string;
@@ -6,7 +7,7 @@ interface TemplateContextValue {
 }
 
 const TemplateContext = React.createContext<TemplateContextValue>({
-  templateId: "classic",
+  templateId: TEMPLATES[0].id,
   menuSections: [],
 });
 

@@ -76,7 +76,7 @@ const sampleResume: ResumeData = {
   id: "sample",
   createdAt: "",
   updatedAt: "",
-  templateId: "classic",
+  templateId: TEMPLATES[0].id,
 };
 
 // 切换模板：一排 3 个，卡片简洁精致——hover 高亮、选中淡蒙版 + 弹性对勾（从上一选中位置的方向滑入）
@@ -116,7 +116,7 @@ function TemplatePanel() {
                 transition={{ delay: i * 0.05, duration: 0.25, ease: "easeOut" }}
                 onClick={() => handleSelect(template.id)}
                 className={cn(
-                  "group relative flex flex-col overflow-hidden rounded-xl border bg-card text-left transition-all duration-200",
+                  "group relative flex flex-col overflow-hidden rounded-none border bg-card text-left transition-all duration-200",
                   isCurrent
                     ? "border-primary ring-1 ring-primary/30"
                     : "border-border hover:border-primary/40 hover:shadow-md"

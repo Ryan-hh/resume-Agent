@@ -12,7 +12,7 @@ const sampleResume: ResumeData = {
   id: "sample",
   createdAt: "",
   updatedAt: "",
-  templateId: "classic",
+  templateId: TEMPLATES[0].id,
 };
 
 // 新建简历：从模板中选择创建（标题固定，仅模板列表滚动，无进入动画）

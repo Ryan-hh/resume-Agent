@@ -24,7 +24,7 @@ function EnsureInitialResume() {
     const state = useResumeStore.getState();
     if (!state.firstRunCreated) {
       if (Object.keys(state.resumes).length === 0) {
-        state.createResume("classic", false);
+        state.createResume(null, false);
       }
       state.markFirstRunCreated();
     } else if (!activeResumeId && Object.keys(state.resumes).length > 0) {
