@@ -1,23 +1,7 @@
 import React from "react";
-import {
-  FileText,
-  StretchHorizontal,
-  Image as ImageIcon,
-  Printer,
-  Braces,
-  FileDown,
-  Loader2,
-  ShieldCheck,
-} from "lucide-react";
+import { FileText, Image as ImageIcon, Braces, FileDown, Loader2, ShieldCheck } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
-import {
-  exportToPdf,
-  exportToLongPagePdf,
-  exportToLongPageImage,
-  exportResumeAsJson,
-  exportResumeAsMarkdown,
-} from "@/utils/export";
-import { exportResumeToBrowserPrint } from "@/utils/print";
+import { exportToPagedPdf, exportToLongPageImage, exportResumeAsJson } from "@/utils/export";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -30,7 +14,7 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
 
   const getElement = () => document.getElementById("resume-preview");
 
-  const handleExport = async (type: "pdf" | "longPdf" | "image" | "print") => {
+  const handleExport = async (type: "pdf" | "image") => {
     if (!activeResume) return;
     const element = getElement();
     if (!element) return;
@@ -44,13 +28,8 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
       };
       switch (type) {
         case "pdf":
-          await exportToBrowserPrintWithToast(element, baseOptions);
-          break;
-        case "longPdf":
-          await exportToLongPagePdf({
+          await exportToPagedPdf({
             ...baseOptions,
-            onStart: undefined,
-            onEnd: undefined,
             successMessage: "PDF 导出成功",
             errorMessage: "PDF 导出失败",
           });
@@ -62,24 +41,10 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
             errorMessage: "图片导出失败",
           });
           break;
-        case "print":
-          await exportResumeToBrowserPrint(element, baseOptions.pagePadding, baseOptions.fontFamily);
-          break;
       }
     } finally {
       setPendingAction(null);
       setOpen(false);
-    }
-  };
-
-  const exportToBrowserPrintWithToast = async (
-    element: HTMLElement,
-    options: { pagePadding: number; fontFamily?: string }
-  ) => {
-    try {
-      await exportResumeToBrowserPrint(element, options.pagePadding, options.fontFamily);
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -94,17 +59,6 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
     setOpen(false);
   };
 
-  const handleMarkdown = () => {
-    if (!activeResume) return;
-    exportResumeAsMarkdown({
-      resume: activeResume,
-      title: activeResume.title,
-      successMessage: "Markdown 导出成功",
-      errorMessage: "Markdown 导出失败",
-    });
-    setOpen(false);
-  };
-
   const exportOptions = [
     {
       id: "pdf" as const,
@@ -113,34 +67,16 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
       desc: "按 A4 纸张分页导出为 PDF 文件，适合投递与打印。",
     },
     {
-      id: "longPdf" as const,
-      icon: StretchHorizontal,
-      title: "长页 PDF",
-      desc: "导出为单页长图式 PDF，适合在屏幕上完整浏览。",
-    },
-    {
       id: "image" as const,
       icon: ImageIcon,
       title: "长页图片",
       desc: "导出为一张完整的长图片（PNG）。",
     },
     {
-      id: "print" as const,
-      icon: Printer,
-      title: "打印",
-      desc: "调起浏览器打印对话框，可选择保存为 PDF 或直接打印。",
-    },
-    {
       id: "json" as const,
       icon: Braces,
       title: "JSON",
       desc: "导出为 JSON 数据文件，可在其他设备导入继续编辑。",
-    },
-    {
-      id: "markdown" as const,
-      icon: FileDown,
-      title: "Markdown",
-      desc: "导出为 Markdown 文本，便于二次编辑与发布。",
     },
   ];
 
@@ -168,7 +104,6 @@ export function PdfExport({ trigger }: { trigger?: React.ReactNode }) {
                 disabled={!!pendingAction}
                 onClick={() => {
                   if (opt.id === "json") return handleJson();
-                  if (opt.id === "markdown") return handleMarkdown();
                   handleExport(opt.id);
                 }}
                 className={cn(

@@ -1,6 +1,6 @@
 import { ResumeTemplate } from "@/types/template";
 
-// 8 套模板：全部共用同一渲染骨架（components/templates/index.tsx 的 SkinTemplate），
+// 7 套模板：全部共用同一渲染骨架（components/templates/index.tsx 的 SkinTemplate），
 // 差异只收敛为两个变量 —— basic.layout（头像位置 左/中/右）+ titleVariant（板块标题变体）。
 export const TEMPLATES: ResumeTemplate[] = [
   {
@@ -82,21 +82,8 @@ export const TEMPLATES: ResumeTemplate[] = [
     availableSections: ["education", "skills", "experience", "internship", "projects", "certificates", "selfEvaluation"],
   },
   {
-    id: "tagblack",
-    name: "模板七",
-    description: "板块标题为黑色实心色块标签，干练利落。",
-    thumbnail: "tagblack",
-    layout: "tagblack",
-    category: "single",
-    colorScheme: { primary: "#000000", secondary: "#4b5563", background: "#ffffff", text: "#212529" },
-    spacing: { sectionGap: 24, itemGap: 14, contentPadding: 40 },
-    basic: { layout: "right" },
-    titleVariant: "solid-label",
-    availableSections: ["education", "skills", "experience", "internship", "projects", "certificates", "selfEvaluation"],
-  },
-  {
     id: "darktech",
-    name: "模板八",
+    name: "模板七",
     description: "板块标题下方整行细线，科技感强。",
     thumbnail: "darktech",
     layout: "darktech",

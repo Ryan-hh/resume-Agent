@@ -217,6 +217,17 @@ a[aria-disabled="true"] {
 .resume-rich ol li {
   margin-bottom: 0.3em;
 }
+/* 跨页续接的列表项（上一页已显示过该条的开头）：隐藏序号/圆点，剩余内容像 Word 一样续排 */
+.resume-rich ul li.resume-li-cont::before {
+  content: "";
+}
+.resume-rich ol li.resume-li-cont {
+  list-style: none;
+}
+/* 跨页续接的条目块（项目/工作/教育等三栏头部已在上一页显示过）：隐藏标题行，避免跨页重复 */
+[data-resume-cont-hide] {
+  display: none !important;
+}
 
 /* 富文本编辑器（TipTap）内容区 */
 .rich-editor .tiptap {
@@ -257,6 +268,26 @@ a[aria-disabled="true"] {
   height: 0;
   color: var(--color-muted-foreground);
   pointer-events: none;
+}
+/* 列表作为文档最后一个块时，ProseMirror 会为保证光标可放置自动补一个尾随空段落
+   （<p><br class="ProseMirror-trailingBreak"></p>）。只将"列表后的最后一个空段"
+   （框架自动补的尾随段）高度压为 0、视觉上不占空行：框里只有列表时干净利落，
+   退出列表时用户新产生的行（尾随段之前的段落）正常显示——与 Word 行为一致：
+   列表结束后留一行可继续输入，输入内容后自动恢复成普通段落。 */
+.rich-editor .tiptap > ul:last-of-type ~ p:last-of-type:has(> br.ProseMirror-trailingBreak:only-child),
+.rich-editor .tiptap > ol:last-of-type ~ p:last-of-type:has(> br.ProseMirror-trailingBreak:only-child) {
+  margin: 0;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+  overflow: hidden;
+}
+
+/* 预览侧：列表作为最后一块时隐藏末尾空段落（编辑进行中 store 会短暂携带 <p></p>，
+   失焦后已被清理；此处保证编辑期间预览也不显示多余空行） */
+.resume-rich ul:last-of-type ~ p:empty,
+.resume-rich ol:last-of-type ~ p:empty {
+  display: none;
 }
 
 /* ask_user 确认卡内的富文本预览：列表/加粗/段落与简历实际渲染一致 */

@@ -1,5 +1,6 @@
 import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { createDocument } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Paragraph from "@tiptap/extension-paragraph";
 import ListItem from "@tiptap/extension-list-item";
@@ -134,7 +135,68 @@ const IndentParagraph = Paragraph.extend({
   },
 });
 
-// 极简富文本编辑器：加粗 / 有序列表 / 无序列表 + Tab 缩进。
+// 清洗 HTML 末尾的空块：空段落 <p></p>、空列表项 <li></li>、空列表 <ul></ul>/<ol></ol>。
+// 只动"末尾"连续的空块（含列表内部的末尾空 li），不碰文档中间的空行。
+function cleanTrailingEmptyBlocks(html: string): string {
+  if (typeof DOMParser === "undefined") return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const root = doc.body;
+  if (!root || root.childNodes.length === 0) return html;
+
+  const isEmptyBlock = (el: Element): boolean => {
+    if (!(el instanceof HTMLElement)) return false;
+    const tag = el.tagName.toLowerCase();
+    if (tag !== "p" && tag !== "li" && tag !== "ul" && tag !== "ol" && tag !== "div") return false;
+    const text = (el.textContent || "").replace(/\u00a0/g, " ").trim();
+    if (text.length > 0) return false;
+    if (tag === "ul" || tag === "ol") {
+      const lis = Array.from(el.children).filter((c) => c.tagName.toLowerCase() === "li");
+      return lis.length > 0 && lis.every((li) => isEmptyBlock(li));
+    }
+    return true;
+  };
+
+  let changed = false;
+  const stripFrom = (parent: Node) => {
+    // 从后往前删空块
+    for (let i = parent.childNodes.length - 1; i >= 0; i--) {
+      const child = parent.childNodes[i];
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const el = child as Element;
+        const tag = el.tagName.toLowerCase();
+        // 列表内部：删掉末尾的空 li（列表项内回车产生的空行）
+        if (tag === "ul" || tag === "ol") {
+          const lis = Array.from(el.children).filter((c) => c.tagName.toLowerCase() === "li");
+          for (let j = lis.length - 1; j >= 0; j--) {
+            if (isEmptyBlock(lis[j])) {
+              el.removeChild(lis[j]);
+              changed = true;
+            } else {
+              break;
+            }
+          }
+        }
+        if (isEmptyBlock(el)) {
+          parent.removeChild(child);
+          changed = true;
+        } else {
+          break; // 非空块，停止（只清末尾）
+        }
+      } else if (child.nodeType === Node.TEXT_NODE && (child.textContent || "").trim() === "") {
+        parent.removeChild(child);
+        changed = true;
+      } else {
+        break;
+      }
+    }
+  };
+
+  stripFrom(root);
+  if (!changed) return html;
+  return root.innerHTML;
+}
+
+// 极简富文本编辑器：加粗 / 斜体 / 有序列表 / 无序列表 + Tab 缩进。
 // 输出 HTML 字符串，与现有简历数据格式兼容
 export function RichEditor({
   value,
@@ -152,7 +214,7 @@ export function RichEditor({
 }) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ italic: false, paragraph: false, listItem: false }),
+      StarterKit.configure({ paragraph: false, listItem: false, italic: false }),
       IndentParagraph,
       IndentListItem,
       Placeholder.configure({ placeholder: placeholder || "" }),
@@ -161,28 +223,27 @@ export function RichEditor({
     onUpdate: ({ editor }) => {
       // 即时同步：每次输入直接写入状态，右侧简历预览实时更新
       onChange(editor.getHTML());
-    },    onBlur: ({ editor }) => {
-      // 失焦时清理文档末尾的空块：空段落、空列表项（列表项内回车产生的空行）、空列表
-      let tr = editor.state.tr;
-      let changed = false;
-      let guard = 0;
-      while (guard++ < 100) {
-        if (tr.doc.content.size <= 1) break; // 至少保留一个块节点
-        // 收集所有"空块"节点位置，取最后一个删除
-        const empties: Array<{ from: number; to: number }> = [];
-        tr.doc.descendants((node, pos) => {
-          const empty =
-            (node.type.name === "paragraph" && node.content.size === 0) ||
-            (node.type.name === "listItem" && node.content.size <= 1) ||
-            ((node.type.name === "bulletList" || node.type.name === "orderedList") && node.content.size === 0);
-          if (empty) empties.push({ from: pos, to: pos + node.nodeSize });
-        });
-        const last = empties[empties.length - 1];
-        if (!last) break;
-        tr.delete(last.from, last.to);
-        changed = true;
+    },
+    onBlur: ({ editor }) => {
+      // 失焦时清理文档末尾的空块：空段落、空列表项（列表项内回车产生的空行）、空列表。
+      // 空块 = 段落/列表项/列表的文本内容为空（含回车产生的 <p><br></p>、空 li、空列表），
+      // 不能只按 content.size===0 判断：TipTap 的空段落/空列表项通常带 <br>（size 为 1 或 2）。
+      // 注意：不能走 editor.commands.setContent —— TipTap 的 setContent 把"整个 doc 节点"传给
+      // tr.replaceWith，ProseMirror 的 Fitter 遇到"以列表结尾"的内容会在末尾自动补一个空段落，
+      // 导致空行永远删不掉。正确做法是传 doc 的内容 Fragment（doc.content），Fitter 不会补段。
+      const cleaned = cleanTrailingEmptyBlocks(editor.getHTML());
+      if (cleaned !== editor.getHTML()) {
+        try {
+          const newDoc = createDocument(cleaned || "<p></p>", editor.schema);
+          editor.view.dispatch(
+            editor.state.tr.replaceWith(0, editor.state.doc.content.size, newDoc.content)
+          );
+          onChange(cleaned);
+        } catch {
+          // 极端兜底：解析失败时退回 setContent（用户内容异常时至少不丢内容）
+          editor.commands.setContent(cleaned);
+        }
       }
-      if (changed) editor.view.dispatch(tr);
     },
     editorProps: {
       attributes: {
@@ -201,7 +262,16 @@ export function RichEditor({
   React.useEffect(() => {
     if (!editor) return;
     if (value === editor.getHTML()) return;
-    editor.commands.setContent(value || "", { emitUpdate: false });
+    try {
+      const newDoc = createDocument(value || "<p></p>", editor.schema);
+      editor.view.dispatch(
+        editor.state.tr
+          .replaceWith(0, editor.state.doc.content.size, newDoc.content)
+          .setMeta("preventUpdate", true)
+      );
+    } catch (e) {
+      editor.commands.setContent(value || "", { emitUpdate: false });
+    }
   }, [value, editor]);
 
   if (!editor) return null;
@@ -221,21 +291,18 @@ export function RichEditor({
       {/* 工具栏 */}
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/50 px-1.5 py-1">
         <ToolButton
-          active={editor.isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
           title="加粗"
         >
           <Bold className="h-3.5 w-3.5" />
         </ToolButton>
         <ToolButton
-          active={editor.isActive("bulletList")}
           onClick={() => editor.chain().focus().toggleSmartList("bulletList").run()}
           title="无序列表"
         >
           <List className="h-3.5 w-3.5" />
         </ToolButton>
         <ToolButton
-          active={editor.isActive("orderedList")}
           onClick={() => editor.chain().focus().toggleSmartList("orderedList").run()}
           title="有序列表"
         >
@@ -259,22 +326,21 @@ export function RichEditor({
 }
 
 function ToolButton({
-  active,
   onClick,
   title,
   children,
 }: {
-  active: boolean;
   onClick?: () => void;
   title: string;
   children: React.ReactNode;
 }) {
-  const cls = cn(
-    "flex h-6 min-w-6 items-center justify-center rounded-none px-1 text-muted-foreground transition-colors",
-    active ? "bg-primary/10 text-primary" : "hover:bg-accent hover:text-foreground"
-  );
   return (
-    <button type="button" className={cls} onClick={onClick} title={title}>
+    <button
+      type="button"
+      className="flex h-6 min-w-6 items-center justify-center rounded-none px-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      onClick={onClick}
+      title={title}
+    >
       {children}
     </button>
   );

@@ -47,8 +47,8 @@ export function TemplateThumbnail({
     const padBottom = parseFloat(cs.paddingBottom) || 0;
     const pageContentH = PREVIEW_HEIGHT_PX - padTop - padBottom;
 
-    const pages = paginateBlocks(blocks, pageContentH);
-    const plan = pages[0] || { blockIds: [blocks[0].i], liLimits: {} };
+    const pages = paginateBlocks(blocks, pageContentH, root);
+    const plan = pages[0] || { blockIds: [blocks[0].i] };
     const clone = clonePageRoot(root, plan);
 
     const pageEl = document.createElement("div");

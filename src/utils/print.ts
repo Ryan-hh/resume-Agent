@@ -17,7 +17,11 @@ export const exportResumeToBrowserPrint = async (
   cloned.style.removeProperty("transform");
   cloned.style.removeProperty("transform-origin");
   cloned.style.setProperty("width", "210mm", "important");
-  cloned.style.setProperty("padding", `${pagePadding}px`, "important");
+  // 外层不再加 padding：内容边距由模板根容器（pagePadding）提供，
+  // 否则 794px 的 A4 页面会溢出被纸张裁切，导致左右边距不对称
+  cloned.style.setProperty("padding", "0", "important");
+  // 页面之间不留间隙，避免多页打印时第二页内容整体下移
+  cloned.style.setProperty("gap", "0", "important");
   cloned.style.setProperty("box-sizing", "border-box", "important");
   cloned.style.setProperty("background", "white", "important");
   cloned.style.setProperty("font-family", normalizeFontFamily(fontFamily), "important");

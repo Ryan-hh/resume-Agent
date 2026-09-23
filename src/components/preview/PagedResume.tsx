@@ -42,7 +42,7 @@ export function PagedResume({
     const padBottom = parseFloat(cs.paddingBottom) || 0;
     const pageContentH = PREVIEW_HEIGHT_PX - padTop - padBottom;
 
-    const pages = paginateBlocks(blocks, pageContentH);
+    const pages = paginateBlocks(blocks, pageContentH, root);
 
     target.innerHTML = "";
     pages.forEach((plan) => {
@@ -92,10 +92,12 @@ export function PagedResume({
 
   return (
     <>
-      {/* 测量树：隐藏但保持可测量（真实布局，宽度为 A4 纸宽） */}
+      {/* 测量树：隐藏但保持可测量（真实布局，宽度为 A4 纸宽）。
+          同时作为长页导出（长页图片/长页 PDF）的内容来源——未分页的连续文档，无分页间距 */}
       <div
         ref={measureRef}
         aria-hidden
+        id={id ? `${id}-flow` : undefined}
         style={{
           position: "absolute",
           visibility: "hidden",

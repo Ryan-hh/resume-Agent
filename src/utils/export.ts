@@ -92,18 +92,27 @@ const prepareLongPageCapture = async ({
   pagePadding,
   fontFamily,
 }: Pick<ExportOptions, "elementId" | "pagePadding" | "fontFamily">) => {
-  const pdfElement = document.querySelector<HTMLElement>(`#${elementId}`);
-  if (!pdfElement) throw new Error(`未找到 #${elementId}`);
+  // 优先用「未分页的连续流」容器（PagedResume 的测量树 #<id>-flow）导出长页：
+  // 它就是完整文档本身，没有 A4 分页、没有页与页之间叠加的上下边距，
+  // 长图/长页 PDF 里不会出现分页造成的空白间隔。
+  // 找不到连续流容器时回退到分页预览（#<id>），兼容旧行为。
+  const flowElement = document.querySelector<HTMLElement>(`#${elementId}-flow`);
+  const sourceElement = flowElement ?? document.querySelector<HTMLElement>(`#${elementId}`);
+  if (!sourceElement) throw new Error(`未找到 #${elementId}`);
 
   const selectedFontFamily = normalizeFontFamily(fontFamily);
-  const clonedElement = pdfElement.cloneNode(true) as HTMLElement;
+  const clonedElement = sourceElement.cloneNode(true) as HTMLElement;
   hidePageBreakLines(clonedElement);
   await optimizeImages(clonedElement);
 
   clonedElement.style.setProperty("transform", "none", "important");
   clonedElement.style.setProperty("transform-origin", "top left", "important");
   clonedElement.style.setProperty("width", "100%", "important");
-  clonedElement.style.setProperty("padding", `${pagePadding}px`, "important");
+  // 连续流容器原本 hidden/absolute：导出时改为可见并回到文档流，
+  // 宽度由外层 794px 容器决定（内容左右边距由模板根容器 pagePadding 提供）
+  clonedElement.style.setProperty("visibility", "visible", "important");
+  clonedElement.style.setProperty("position", "static", "important");
+  clonedElement.style.setProperty("pointer-events", "none", "important");
   clonedElement.style.setProperty("box-sizing", "border-box", "important");
   clonedElement.style.setProperty("background", "white", "important");
   clonedElement.style.setProperty("font-family", selectedFontFamily, "important");
@@ -120,7 +129,7 @@ const prepareLongPageCapture = async ({
 
   const container = document.createElement("div");
   container.style.position = "fixed";
-  container.style.left = "-10000px";
+  container.style.left = "0";
   container.style.top = "0";
   container.style.width = `${A4_WIDTH_MM}mm`;
   container.style.background = "white";
@@ -265,6 +274,121 @@ export const exportToPdf = async ({
     console.error("PDF 导出失败:", error);
     if (errorMessage) toast.error(errorMessage);
   } finally {
+    onEnd?.();
+  }
+};
+
+// 分页 PDF（直接下载）：把预览渲染好的多页 A4 转成 PDF 直接下载，不依赖浏览器打印对话框。
+// 每页尺寸与预览完全一致（794×1123px = A4 @96dpi），左右边距由模板根容器提供，所见即所得。
+// 实现：克隆容器放到视口内（z-index 最低、不挡交互），整份内容一次截图，再按页高切片装入多页 PDF。
+// 注意不能放屏幕外（left:-10000px）——html2canvas 按元素视口坐标绘制，屏幕外元素会截出空白。
+export const exportToPagedPdf = async ({
+  elementId,
+  title,
+  fontFamily,
+  onStart,
+  onEnd,
+  successMessage,
+  errorMessage,
+}: Omit<ExportOptions, "pagePadding"> & { pagePadding?: number }) => {
+  onStart?.();
+  let container: HTMLDivElement | null = null;
+  let fullCanvas: HTMLCanvasElement | null = null;
+  const canvases: HTMLCanvasElement[] = [];
+  try {
+    const pdfElement = document.querySelector<HTMLElement>(`#${elementId}`);
+    if (!pdfElement) throw new Error(`未找到 #${elementId}`);
+    const selectedFontFamily = normalizeFontFamily(fontFamily);
+    const clonedElement = pdfElement.cloneNode(true) as HTMLElement;
+    hidePageBreakLines(clonedElement);
+    clonedElement.style.setProperty("transform", "none", "important");
+    clonedElement.style.setProperty("transform-origin", "top left", "important");
+    // 外层不加 padding/gap：边距由模板根容器（pagePadding）提供，页面间不留空隙
+    clonedElement.style.setProperty("padding", "0", "important");
+    clonedElement.style.setProperty("gap", "0", "important");
+    clonedElement.style.setProperty("font-family", selectedFontFamily, "important");
+    await optimizeImages(clonedElement);
+
+    // 直接子元素即 A4 页面（PagedResume 渲染的 pageEl），
+    // 页高必须在元素挂载到 DOM 并完成渲染后再测量，否则 offsetHeight 全为 0
+    container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.left = "0";
+    container.style.top = "0";
+    container.style.width = "794px";
+    container.style.background = "white";
+    container.style.pointerEvents = "none";
+    container.style.zIndex = "-1";
+    container.appendChild(clonedElement);
+    document.body.appendChild(container);
+
+    await waitForImages(clonedElement);
+    if (document.fonts?.ready) await document.fonts.ready;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+
+    const pageHeights: number[] = [];
+    Array.from(clonedElement.children).forEach((el) => {
+      if (el instanceof HTMLElement && el.offsetWidth > 0) pageHeights.push(el.offsetHeight);
+    });
+    if (pageHeights.length === 0) throw new Error("未找到可导出的页面");
+    const totalHeight = pageHeights.reduce((s, h) => s + h, 0);
+
+    const { default: html2canvas } = await import("html2canvas");
+    fullCanvas = await html2canvas(clonedElement, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: 794,
+      windowHeight: totalHeight,
+    });
+
+    // 按页高从整图中切片
+    let y = 0;
+    for (const h of pageHeights) {
+      const c = document.createElement("canvas");
+      c.width = fullCanvas.width;
+      c.height = Math.max(1, Math.round(h * 2));
+      const ctx = c.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(fullCanvas, 0, Math.round(y * 2), fullCanvas.width, c.height, 0, 0, c.width, c.height);
+      }
+      canvases.push(c);
+      y += h;
+    }
+
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+    canvases.forEach((canvas, i) => {
+      if (i > 0) pdf.addPage();
+      const imgData = canvas.toDataURL("image/png");
+      const ratio = canvas.height / canvas.width;
+      if (ratio > 297 / 210 + 0.001) {
+        // 页面异常超高：按高度适配并水平居中，避免变形/裁切
+        const imgW = (297 * canvas.width) / canvas.height;
+        pdf.addImage(imgData, "PNG", (210 - imgW) / 2, 0, imgW, 297);
+      } else {
+        pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
+      }
+    });
+    pdf.save(`${getSafeFileName(title)}.pdf`);
+    if (successMessage) toast.success(successMessage);
+  } catch (error) {
+    console.error("PDF 导出失败:", error);
+    if (errorMessage) toast.error(errorMessage);
+  } finally {
+    canvases.forEach((c) => {
+      c.width = 0;
+      c.height = 0;
+    });
+    if (fullCanvas) {
+      fullCanvas.width = 0;
+      fullCanvas.height = 0;
+    }
+    if (container?.parentNode) container.parentNode.removeChild(container);
     onEnd?.();
   }
 };

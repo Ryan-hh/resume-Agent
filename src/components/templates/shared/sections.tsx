@@ -187,7 +187,7 @@ export function SectionTitle({
               flexShrink: 0,
             }}
           >
-            {renderIcon(icon, Math.round((headerSize + 8) * 0.55), "#ffffff")}
+            {renderIcon(icon, Math.round((headerSize + 8) * 0.55), "#ffffff", { center: true })}
           </span>
           <h3 style={{ ...common, color: themeColor, whiteSpace: "nowrap", margin: 0 }}>{title}</h3>
           <div style={{ flex: 1, height: "2px", background: themeColor, opacity: 0.3 }} />
@@ -246,10 +246,27 @@ export function SectionTitle({
 }
 
 // ===== 公共图标渲染 =====
-export function renderIcon(iconName: string | undefined, size = 16, color?: string): React.ReactNode {
+// center: true 时去掉 marginTop 微调（图标由父容器 flex 居中，如圆形/方形底内的图标）
+export function renderIcon(
+  iconName: string | undefined,
+  size = 16,
+  color?: string,
+  opts?: { center?: boolean }
+): React.ReactNode {
   const IconComponent = Icons[iconName as keyof typeof Icons] as React.ElementType;
   if (!IconComponent) return null;
-  return <IconComponent style={{ width: size, height: size, marginTop: "0.2em", flexShrink: 0 }} color={color} />;
+  return (
+    <IconComponent
+      style={{
+        width: size,
+        height: size,
+        // 图标与文字同行时用 marginTop 做基线微调；圆形/色块容器内必须为 0，否则图标偏离圆心
+        marginTop: opts?.center ? 0 : "0.2em",
+        flexShrink: 0,
+      }}
+      color={color}
+    />
+  );
 }
 
 // ===== BaseInfo =====

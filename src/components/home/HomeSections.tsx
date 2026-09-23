@@ -21,6 +21,7 @@ import {
   Bot,
   FileType2,
   Wand2,
+  Undo2,
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
@@ -50,11 +51,11 @@ export function LandingHeader() {
       )}
     >
       <button onClick={() => navigate("/")} className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <span className="flex h-8 w-8 items-center justify-center bg-primary text-primary-foreground">
           <FileText className="h-4 w-4" />
         </span>
         <span className="text-sm font-semibold">简历助手</span>
-        <span className="hidden rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground sm:inline-block">
+        <span className="hidden border border-border px-2 py-0.5 text-[10px] text-muted-foreground sm:inline-block">
           内置 AI · 智能小昊
         </span>
       </button>
@@ -76,7 +77,7 @@ export function HeroSection() {
 
   return (
     <section className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-6 pt-16 text-center">
-      {/* 渐变光斑背景 */}
+      {/* 渐变光斑背景（装饰光晕，非圆角控件） */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[15%] top-[20%] h-[400px] w-[400px] rounded-full bg-primary/10 blur-3xl animate-blob" />
         <div className="absolute right-[12%] top-[30%] h-[350px] w-[350px] rounded-full bg-blue-400/10 blur-3xl animate-blob animation-delay-2000" />
@@ -89,7 +90,7 @@ export function HeroSection() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="relative z-10"
       >
-        <span className="mb-6 inline-block rounded-full border border-border bg-background/60 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
+        <span className="mb-6 inline-block border border-border bg-background/60 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
           免费 · 本地存储 · 隐私安全 · 对话式编辑
         </span>
         <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
@@ -98,8 +99,8 @@ export function HeroSection() {
           帮你改简历
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          A4 实时预览、多套精美模板、一键导出 PDF。内置 AI 智能体理解你的指令，
-          实时改写并可逐条撤销；所有数据只保存在你的浏览器里。
+          表单编辑、A4 实时预览、多套模板、一键导出。内置 AI 智能体理解你的指令，
+          实时改写并可逐步撤销；所有数据只保存在你的浏览器里。
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Button size="lg" onClick={() => navigate("/")}>
@@ -113,10 +114,10 @@ export function HeroSection() {
         {/* 指标条 */}
         <div className="mx-auto mt-12 flex max-w-lg flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm">
           {[
-            { k: "6+", v: "简历模板" },
-            { k: "3", v: "主流大模型接入" },
+            { k: "7", v: "简历模板" },
+            { k: "3+", v: "主流大模型接入" },
             { k: "0", v: "数据上传服务器" },
-            { k: "PDF", v: "一键导出" },
+            { k: "3", v: "导出格式（PDF/长图/JSON）" },
           ].map((s) => (
             <div key={s.v} className="text-center">
               <div className="text-xl font-bold text-foreground">{s.k}</div>
@@ -169,22 +170,27 @@ const FEATURES: Feature[] = [
   {
     icon: Bot,
     title: "AI 智能小昊",
-    desc: "基于 ReAct 工具调用的智能体，听懂「把这段经历润色一下」「换成蓝色主题」，直接落地修改。",
+    desc: "基于 ReAct 工具调用的智能体，听懂「把这段经历润色一下」「换成蓝色主题」，直接落地修改，改错可逐步撤销。",
   },
   {
     icon: Eye,
     title: "A4 实时预览",
-    desc: "三栏工作台，编辑即所见即所得，纸张比例、页边距与导出完全一致。",
+    desc: "三栏工作台，编辑即所见即所得；长文本按 Word 式行级分页自动断页，纸张比例与导出完全一致。",
   },
   {
     icon: LayoutTemplate,
-    title: "多套模板",
-    desc: "经典、极简、优雅、瑞士网格、蓝点、时间线等风格，一键切换不丢内容。",
+    title: "7 套模板",
+    desc: "极简线、优雅、蓝点圆标、经典蓝、超级蓝、极简灰、深色科技——一键切换不丢内容。",
   },
   {
     icon: Wand2,
     title: "富文本编辑",
-    desc: "基于 Tiptap 的所见即所得编辑器，加粗、列表、字号字色、下划线一应俱全。",
+    desc: "基于 Tiptap 的所见即所得编辑器：加粗、有序 / 无序列表、Tab 缩进、AI 润色，一条龙。",
+  },
+  {
+    icon: Undo2,
+    title: "撤销与重做",
+    desc: "所有修改进入历史栈，支持逐步撤销 / 重做，AI 改错也能一键回退到之前版本。",
   },
   {
     icon: GripVertical,
@@ -194,12 +200,12 @@ const FEATURES: Feature[] = [
   {
     icon: Plug,
     title: "多模型接入",
-    desc: "兼容 OpenAI、Anthropic Claude、Google Gemini 及任意 OpenAI 兼容接口，自带密钥本地配置。",
+    desc: "兼容 OpenAI、Anthropic Claude、Google Gemini 及任意 OpenAI 兼容接口，密钥本地配置、按需切换。",
   },
   {
     icon: FileUp,
     title: "智能导入",
-    desc: "上传 PDF / Word / TXT / JSON / 图片，自动识别并填入对应板块，省去手抄。",
+    desc: "上传 PDF / Word / TXT / MD / 图片 / JSON，自动识别并填入对应板块，省去手抄。",
   },
   {
     icon: ShieldCheck,
@@ -208,8 +214,8 @@ const FEATURES: Feature[] = [
   },
   {
     icon: Download,
-    title: "PDF 导出",
-    desc: "基于 jsPDF + html2canvas 生成打印级 A4 PDF，排版还原度高，可直接投递。",
+    title: "一键导出",
+    desc: "A4 分页 PDF（文字清晰可选中）、长图 PNG、JSON 数据文件，投递与备份两相宜。",
   },
 ];
 
@@ -222,8 +228,8 @@ export function FeaturesSection() {
           const Icon = f.icon;
           return (
             <AnimatedFeature key={f.title} delay={(i % 3) * 0.08}>
-              <div className="group h-full rounded-2xl border border-border bg-background p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+              <div className="group h-full border border-border bg-background p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <div className="mb-3 flex h-11 w-11 items-center justify-center bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="font-semibold">{f.title}</h3>
@@ -287,9 +293,9 @@ export function TechSection() {
             const Icon = g.icon;
             return (
               <AnimatedFeature key={g.title} delay={(i % 3) * 0.08}>
-                <div className="h-full rounded-2xl border border-border bg-background p-6">
+                <div className="h-full border border-border bg-background p-6">
                   <div className="mb-4 flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <span className="flex h-9 w-9 items-center justify-center bg-primary/10 text-primary">
                       <Icon className="h-4 w-4" />
                     </span>
                     <h3 className="font-semibold">{g.title}</h3>
@@ -298,7 +304,7 @@ export function TechSection() {
                     {g.items.map((t) => (
                       <span
                         key={t}
-                        className="rounded-md border border-border bg-muted/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
+                        className="border border-border bg-muted/50 px-2.5 py-1 font-mono text-[11px] text-muted-foreground"
                       >
                         {t}
                       </span>
@@ -324,8 +330,8 @@ export function TechSection() {
 /* ---------------- 三步流程 ---------------- */
 const STEPS = [
   { n: "01", title: "创建简历", desc: "选一套模板，从空白或示例简历开始。" },
-  { n: "02", title: "让智能小昊改", desc: "用自然语言描述需求，或直接用表单手动编辑。" },
-  { n: "03", title: "导出投递", desc: "满意后一键导出 PDF，或随时回来继续修改。" },
+  { n: "02", title: "填写与润色", desc: "表单直接编辑，或让智能小昊用自然语言帮你改。" },
+  { n: "03", title: "导出投递", desc: "满意后一键导出 PDF / 长图 / JSON，随时回来继续修改。" },
 ];
 
 export function StepsSection() {
@@ -335,7 +341,7 @@ export function StepsSection() {
       <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
         {STEPS.map((s, i) => (
           <AnimatedFeature key={s.n} delay={i * 0.1}>
-            <div className="relative h-full rounded-2xl border border-border bg-background p-6">
+            <div className="relative h-full border border-border bg-background p-6">
               <div className="font-mono text-3xl font-bold text-primary/25">{s.n}</div>
               <h3 className="mt-3 font-semibold">{s.title}</h3>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
@@ -353,7 +359,7 @@ export function CTASection() {
   return (
     <section className="px-6 py-20">
       <AnimatedFeature>
-        <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/5 via-background to-blue-400/5 p-12 text-center">
+        <div className="relative mx-auto max-w-3xl overflow-hidden border border-border bg-gradient-to-br from-primary/5 via-background to-blue-400/5 p-12 text-center">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl animate-blob" />
           <h2 className="text-2xl font-bold sm:text-3xl">现在就创建你的简历</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
@@ -382,7 +388,7 @@ export function Footer() {
         </span>
         <button
           onClick={() => setTheme(resolved === "dark" ? "light" : "dark")}
-          className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs transition-colors hover:bg-accent"
+          className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-xs transition-colors hover:bg-accent"
         >
           {resolved === "dark" ? (
             <>
