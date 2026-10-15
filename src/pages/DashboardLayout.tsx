@@ -145,7 +145,7 @@ export default function DashboardLayout() {
       </Dialog>
 
       <main className="scrollbar-hide min-h-0 flex-1 overflow-y-auto dark:bg-[#1d1d1d]">
-        <BackupBanner />
+        <BackupBanner onOpenSettings={handleSettingsClick} />
         <Outlet />
       </main>
     </div>

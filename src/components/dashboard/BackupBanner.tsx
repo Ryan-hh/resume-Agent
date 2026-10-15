@@ -1,6 +1,5 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { FolderSync, X } from "lucide-react";
 import { useBackupStore } from "@/store/useBackupStore";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,7 @@ import { Button } from "@/components/ui/button";
 const DISMISS_KEY = "resume-backup-banner-dismissed";
 
 // 启动引导横幅：未开启自动备份时在仪表盘顶部提示一次，可「稍后再说」关闭
-export function BackupBanner() {
-  const navigate = useNavigate();
+export function BackupBanner({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const supported = useBackupStore((s) => s.supported);
   const isConfigured = useBackupStore((s) => s.isConfigured);
 
@@ -53,7 +51,7 @@ export function BackupBanner() {
                   选择一个本地文件夹，简历与 AI 配置将自动保存为 JSON 文件，防止数据丢失
                 </p>
               </div>
-              <Button size="sm" onClick={() => navigate("/settings")} className="shrink-0 gap-1.5">
+              <Button size="sm" onClick={onOpenSettings} className="shrink-0 gap-1.5">
                 <FolderSync className="h-3.5 w-3.5" />
                 立即开启
               </Button>
