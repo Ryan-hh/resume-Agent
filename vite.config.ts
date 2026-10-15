@@ -24,4 +24,24 @@ export default defineConfig({
     // 本项目仅使用其厂商子路径图标（es/<Provider>），排除预构建、按需转换
     exclude: ['@lobehub/icons'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // 按库拆分 vendor chunk：首屏并行下载多个小 chunk，且各库独立缓存
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return;
+          const p = id.split('node_modules')[1] ?? '';
+          if (/(react|react-dom|react-router|scheduler|zustand|sonner)/.test(p)) return 'vendor-react';
+          if (/(framer-motion|lucide-react|clsx|tailwind-merge|class-variance)/.test(p)) return 'vendor-ui';
+          if (/(antd|@ant-design|rc-|@rc-component)/.test(p)) return 'vendor-antd';
+          if (/(tiptap|prosemirror)/.test(p)) return 'vendor-tiptap';
+          if (/(react-markdown|remark|rehype|micromark|unist|hast|mdast|unified|vfile|trough|bail|property-information|space-separated|comma-separated|character-entities|decode-named|html-void|devlop|trim-lines)/.test(p)) return 'vendor-markdown';
+          if (/(@langchain|@anthropic-ai|@google|langgraph|langsmith|openai|zod)/.test(p)) return 'vendor-ai';
+          if (/(html2canvas|jspdf|pdfjs-dist|mammoth|dompurify)/.test(p)) return 'vendor-docs';
+          if (/(@dnd-kit|react-resizable-panels)/.test(p)) return 'vendor-dnd';
+          return 'vendor-misc';
+        },
+      },
+    },
+  },
 })

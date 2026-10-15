@@ -1,13 +1,19 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Plus, FolderOpen, FileText, Trash2 } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
 import { ResumeCardItem } from "@/components/dashboard/ResumeCardItem";
 import { CreateResumeModal } from "@/components/dashboard/CreateResumeModal";
-import { ImportResumeDialog } from "@/components/dashboard/ImportResumeDialog";
 import { Button } from "@/components/ui/button";
 import { LightSwitch } from "@/components/shared/LightSwitch";
+
+// 导入弹窗懒加载：仅在点击「导入」时才加载 pdfjs/mammoth 等解析库
+const ImportResumeDialog = lazy(() =>
+  import("@/components/dashboard/ImportResumeDialog").then((m) => ({
+    default: m.ImportResumeDialog,
+  }))
+);
 
 // 我的简历页
 export default function ResumesPage() {
@@ -82,7 +88,9 @@ export default function ResumesPage() {
       )}
 
       <CreateResumeModal open={createOpen} onOpenChange={setCreateOpen} />
-      <ImportResumeDialog open={importOpen} onOpenChange={setImportOpen} />
+      <Suspense fallback={null}>
+        <ImportResumeDialog open={importOpen} onOpenChange={setImportOpen} />
+      </Suspense>
     </div>
   );
 }
